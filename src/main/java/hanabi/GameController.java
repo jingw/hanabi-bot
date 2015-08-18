@@ -19,6 +19,10 @@ public class GameController {
         if (log) {
             System.out.println(state);
         }
+        int numPlayers = players.length;
+        for (int i = 0; i < numPlayers; ++i) {
+            players[i].notifyGameStarted(state, i);
+        }
         while (!state.isFinished()) {
             int player = state.getCurrentPlayer();
             int hand = state.getHandUnsafe(player);

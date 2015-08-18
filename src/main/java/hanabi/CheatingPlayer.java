@@ -129,4 +129,8 @@ public class CheatingPlayer implements Player {
     @Override
     public void notifyDraw(int card, int player) {
     }
+
+    @Override
+    public void notifyGameStarted(GameState state, int position) {
+    }
 }

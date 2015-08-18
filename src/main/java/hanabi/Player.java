@@ -5,6 +5,11 @@ public interface Player {
     int getMove(GameState state);
 
     /**
+     * Called when the game starts.
+     * @param position the position of player (0 goes first)
+     */
+    void notifyGameStarted(GameState state, int position);
+    /**
      * Called when any hint is given, including by this player
      *
      * @param which bit mask in the same order as hand.
