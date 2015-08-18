@@ -19,7 +19,7 @@ public class Main {
     }
 
     private static void runTrials() {
-        final int TRIALS = 1000_000;
+        final int TRIALS = 1_000_000;
         Player[] players = {new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer()};
         int[] counts = new int[26];
         Random random = new Random();
@@ -38,10 +38,10 @@ public class Main {
         double sum = 0;
         for (int i = 0; i < counts.length; i++) {
             if (counts[i] > 0) {
-                System.out.printf("%d: %.2f%n", i, counts[i] * 100d / TRIALS);
+                System.out.printf("%d: %.3f%n", i, counts[i] * 100d / TRIALS);
                 sum += i * counts[i];
             }
         }
-        System.out.printf("mean: %.2f%n", sum / TRIALS);
+        System.out.printf("mean: %.3f%n", sum / TRIALS);
     }
 }

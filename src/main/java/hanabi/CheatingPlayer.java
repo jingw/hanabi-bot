@@ -3,6 +3,7 @@ package hanabi;
 /**
  * Cheats by looking at this player's own hand. Hints are used only to buy time.
  * This represents the best one could possibly do in Hanabi.
+ * (actually could be a bit better with brute force planning)
  */
 public class CheatingPlayer implements Player {
     @Override
@@ -11,32 +12,33 @@ public class CheatingPlayer implements Player {
         int size = Hand.getSize(hand);
         int tableau = state.getTableau();
 
-        // if there's a playable card, play the lowest.
-        int minPlayableNum = Integer.MAX_VALUE;
-        int minPlayableIndex = -1;
+        // if there's a playable card, play it
         for (int i = 0; i < size; i++) {
             int card = Hand.getCard(hand, i);
-            int color = Card.getColor(card), number = Card.getNumber(card);
-            if (number < minPlayableNum && Tableau.getCount(tableau, color) == number) {
-                minPlayableNum = number;
-                minPlayableIndex = i;
+            if (Tableau.isPlayable(tableau, card)) {
+                return Move.play(i);
             }
-        }
-        if (minPlayableIndex >= 0) {
-            return Move.play(minPlayableIndex);
         }
 
         // if anyone has a playable card, and the deck is thin, hint to buy time
-        if (state.getHints() > 0 && state.getDeckSize() <= 5 && doesAnyoneHavePlayableCard(state)) {
+        // value chosen by trial and error
+        int hints = state.getHints();
+        if (hints > 0 && (state.getDeckSize() <= 11 || hints == GameState.MAX_HINTS)
+                && doesAnyoneHavePlayableCard(state)) {
             return Move.hintColor(0, 0);
         }
 
-        // if there's an obsolete card, throw it away
+        // if there's an obsolete / duplicate card, throw it away
+        long handCards = CardMultiSet.EMPTY;
         for (int i = 0; i < size; i++) {
             int card = Hand.getCard(hand, i);
             if (Tableau.isObsolete(tableau, card)) {
                 return Move.discard(i);
             }
+            if (CardMultiSet.getCount(handCards, card) > 0) {
+                return Move.discard(i);
+            }
+            handCards = CardMultiSet.increment(handCards, card);
         }
 
         // if anyone has a playable card, hint to buy time
