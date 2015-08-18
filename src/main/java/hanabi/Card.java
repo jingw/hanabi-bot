@@ -23,7 +23,7 @@ public final class Card {
 
     private static final int[] ALL_CARDS;
 
-    private static final int[] NUM_COUNTS = {3, 2, 2, 2, 1};
+    public static final int[] NUM_COUNTS = {3, 2, 2, 2, 1};
 
     static {
         ALL_CARDS = new int[6 * 10];

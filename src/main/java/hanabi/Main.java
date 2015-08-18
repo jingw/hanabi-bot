@@ -2,6 +2,10 @@ package hanabi;
 
 public class Main {
     public static void main(String[] args) {
+        playSimpleGame();
+    }
+
+    private static void playSimpleGame() {
         Player[] players = {new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer()};
         GameState state = new GameState(false, 3, RandomUtil.INSTANCE);
         GameController controller = new GameController(state, players);
