@@ -40,7 +40,7 @@ public class CheatingPlayer implements Player {
         }
 
         // if anyone has a playable card, hint to buy time
-        if (doesAnyoneHavePlayableCard(state)) {
+        if (state.getHints() > 0 && doesAnyoneHavePlayableCard(state)) {
             return Move.hintColor(0, 0);
         }
 
