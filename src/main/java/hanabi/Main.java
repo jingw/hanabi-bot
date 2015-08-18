@@ -4,8 +4,8 @@ import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
-//        runTrials();
-        playSimpleGame();
+        runTrials();
+//        playSimpleGame();
     }
 
     /**
@@ -14,9 +14,10 @@ public class Main {
     private static void playSimpleGame() {
         Random random = new Random();
         random.setSeed(999695);
-        Player[] players = {new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer()};
+        Player[] cheatingPlayers = {new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer()};
+        Player[] smartPlayers = {new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer()};
         GameState state = new GameState(false, 5, random);
-        GameController controller = new GameController(state, players, true);
+        GameController controller = new GameController(state, smartPlayers, true);
         controller.run();
         System.out.println(controller.getState().getScore());
         System.out.println(controller.getState().getTurns());
@@ -26,14 +27,18 @@ public class Main {
      * Play a lot of games and report statistics
      */
     private static void runTrials() {
-        final int TRIALS = 1_000_000;
-        Player[] players = {new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer()};
+        final int TRIALS = 11_000;
+        Player[] cheatingPlayers3 = {new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer()};
+        Player[] cheatingPlayers5 = {new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer()};
+        Player[] smartPlayers3 = {new SmartPlayer(), new SmartPlayer(), new SmartPlayer()};
+        Player[] smartPlayers4 = {new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer()};
+        Player[] smartPlayers5 = {new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer()};
         int[] counts = new int[26];
         Random random = new Random();
         for (int i = 0; i < TRIALS; i++) {
             random.setSeed(i);
-            GameState state = new GameState(false, 5, random);
-            GameController controller = new GameController(state, players, false);
+            GameState state = new GameState(false, 4, random);
+            GameController controller = new GameController(state, smartPlayers4, false);
             controller.run();
             int score = controller.getState().getScore();
             counts[score]++;
