@@ -37,4 +37,16 @@ public class Tableau {
         result.append(']');
         return result.toString();
     }
+
+    /** Return true if the card is a legal play on the given tableau */
+    public static boolean isPlayable(int tableau, int card) {
+        int color = Card.getColor(card), number = Card.getNumber(card);
+        return getCount(tableau, color) == number;
+    }
+
+    /** Return true if the card has already been played on the tableau */
+    public static boolean isObsolete(int tableau, int card) {
+        int color = Card.getColor(card), number = Card.getNumber(card);
+        return getCount(tableau, color) > number;
+    }
 }

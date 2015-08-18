@@ -180,9 +180,8 @@ public final class GameState {
         int pos = Move.getPosition(move);
         int card = Hand.getCard(hands[currentPlayer], pos);
         removeCard(pos);
-        int color = Card.getColor(card), num = Card.getNumber(card);
-        int currentCount = Tableau.getCount(tableau, color);
-        if (num == currentCount) {
+        if (Tableau.isPlayable(tableau, card)) {
+            int color = Card.getColor(card), num = Card.getNumber(card);
             // successful play
             tableau = Tableau.increment(tableau, color);
             if (num == Card.MAX_NUMBER) {

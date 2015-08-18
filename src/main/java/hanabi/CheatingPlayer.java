@@ -32,8 +32,7 @@ public class CheatingPlayer implements Player {
                 int psize = Hand.getSize(phand);
                 for (int i = 0; i < psize; i++) {
                     int card = Hand.getCard(phand, i);
-                    int color = Card.getColor(card), number = Card.getNumber(card);
-                    if (Tableau.getCount(tableau, color) == number) {
+                    if (Tableau.isPlayable(tableau, card)) {
                         return Move.hintColor(0, 0);
                     }
                 }
@@ -43,8 +42,7 @@ public class CheatingPlayer implements Player {
         // if there's an obsolete card, throw it away
         for (int i = 0; i < size; i++) {
             int card = Hand.getCard(hand, i);
-            int color = Card.getColor(card), number = Card.getNumber(card);
-            if (number < Tableau.getCount(tableau, color)) {
+            if (Tableau.isObsolete(tableau, card)) {
                 return Move.discard(i);
             }
         }
@@ -56,8 +54,7 @@ public class CheatingPlayer implements Player {
                 int psize = Hand.getSize(phand);
                 for (int i = 0; i < psize; i++) {
                     int card = Hand.getCard(phand, i);
-                    int color = Card.getColor(card), number = Card.getNumber(card);
-                    if (Tableau.getCount(tableau, color) == number) {
+                    if (Tableau.isPlayable(tableau, card)) {
                         return Move.hintColor(0, 0);
                     }
                 }
