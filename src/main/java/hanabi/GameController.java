@@ -61,21 +61,21 @@ public class GameController {
             switch (type) {
                 case Move.DISCARD:
                     for (Player p : players) {
-                        p.notifyDiscard(removedCard, Move.getPosition(move), player);
-                        p.notifyDraw(p == players[player] ? Card.NULL : result, player);
+                        p.notifyDiscard(null, removedCard, Move.getPosition(move), player);
+                        p.notifyDraw(null, p == players[player] ? Card.NULL : result, player);
                     }
                     break;
                 case Move.PLAY:
                     for (Player p : players) {
-                        p.notifyPlay(removedCard, Move.getPosition(move), player);
-                        p.notifyDraw(p == players[player] ? Card.NULL : result, player);
+                        p.notifyPlay(null, removedCard, Move.getPosition(move), player);
+                        p.notifyDraw(null, p == players[player] ? Card.NULL : result, player);
                     }
                     break;
                 case Move.HINT_COLOR: {
                     int color = Move.getHintContent(move);
                     int match = Hand.matchCardsColor(hand, color);
                     for (Player p : players) {
-                        p.notifyHintNumber(Move.getHintPlayer(move), player, color, match);
+                        p.notifyHintNumber(null, Move.getHintPlayer(move), player, color, match);
                     }
                     break;
                 }
@@ -83,7 +83,7 @@ public class GameController {
                     int number = Move.getHintContent(move);
                     int match = Hand.matchCardsColor(hand, number);
                     for (Player p : players) {
-                        p.notifyHintNumber(Move.getHintPlayer(move), player, number, match);
+                        p.notifyHintNumber(null, Move.getHintPlayer(move), player, number, match);
                     }
                     break;
                 }

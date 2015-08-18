@@ -111,23 +111,23 @@ public class CheatingPlayer implements Player {
     }
 
     @Override
-    public void notifyHintColor(int targetPlayer, int sourcePlayer, int color, int which) {
+    public void notifyHintColor(GameState state, int targetPlayer, int sourcePlayer, int color, int which) {
     }
 
     @Override
-    public void notifyHintNumber(int targetPlayer, int sourcePlayer, int number, int which) {
+    public void notifyHintNumber(GameState state, int targetPlayer, int sourcePlayer, int number, int which) {
     }
 
     @Override
-    public void notifyPlay(int card, int position, int player) {
+    public void notifyPlay(GameState state, int card, int position, int player) {
     }
 
     @Override
-    public void notifyDiscard(int card, int position, int player) {
+    public void notifyDiscard(GameState state, int card, int position, int player) {
     }
 
     @Override
-    public void notifyDraw(int card, int player) {
+    public void notifyDraw(GameState state, int card, int player) {
     }
 
     @Override
