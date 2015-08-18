@@ -33,7 +33,7 @@ public class GameStateTest {
     @Test(expected = IllegalArgumentException.class)
     public void testHintSelf() {
         GameState state = new GameState(true, 4, RandomUtil.INSTANCE);
-        int color = Card.getColor(Hand.getCard(state.getHandUnsafe(0), 0));
+        int color = Card.getColor(Hand.getCard(state.getHand(0), 0));
         state.applyMove(Move.hintColor(0, color));
     }
 
@@ -61,8 +61,8 @@ public class GameStateTest {
         state.applyMove(Move.discard(0));
         Assert.assertEquals(1, state.getDeckSize());
         Assert.assertEquals(hints + 1, state.getHints());
-        Assert.assertEquals(1, Hand.getSize(state.getHandUnsafe(0)));
-        Assert.assertEquals(TOP_OF_DECK, Hand.getCard(state.getHandUnsafe(0), 0));
+        Assert.assertEquals(1, Hand.getSize(state.getHand(0)));
+        Assert.assertEquals(TOP_OF_DECK, Hand.getCard(state.getHand(0), 0));
         Assert.assertEquals(-1, state.getEndingPlayer());
         Assert.assertFalse(state.isFinished());
         Assert.assertEquals("[A0]", CardMultiSet.toString(state.getDiscard()));
@@ -81,8 +81,8 @@ public class GameStateTest {
         state.applyMove(Move.discard(0));
         Assert.assertEquals(0, state.getDeckSize());
         Assert.assertEquals(hints + 1, state.getHints());
-        Assert.assertEquals(1, Hand.getSize(state.getHandUnsafe(0)));
-        Assert.assertEquals(TOP_OF_DECK, Hand.getCard(state.getHandUnsafe(0), 0));
+        Assert.assertEquals(1, Hand.getSize(state.getHand(0)));
+        Assert.assertEquals(TOP_OF_DECK, Hand.getCard(state.getHand(0), 0));
         Assert.assertEquals(0, state.getEndingPlayer());
         Assert.assertFalse(state.isFinished());
     }
@@ -101,8 +101,8 @@ public class GameStateTest {
         state.applyMove(Move.discard(0));
         Assert.assertEquals(0, state.getDeckSize());
         Assert.assertEquals(hints + 1, state.getHints());
-        Assert.assertEquals(1, Hand.getSize(state.getHandUnsafe(0)));
-        Assert.assertEquals(0, Hand.getSize(state.getHandUnsafe(1)));
+        Assert.assertEquals(1, Hand.getSize(state.getHand(0)));
+        Assert.assertEquals(0, Hand.getSize(state.getHand(1)));
         Assert.assertEquals(0, state.getEndingPlayer());
         Assert.assertEquals(0, state.getCurrentPlayer());
         Assert.assertFalse(state.isFinished());
@@ -122,8 +122,8 @@ public class GameStateTest {
         state.applyMove(Move.discard(0));
         Assert.assertEquals(0, state.getDeckSize());
         Assert.assertEquals(hints + 1, state.getHints());
-        Assert.assertEquals(0, Hand.getSize(state.getHandUnsafe(0)));
-        Assert.assertEquals(1, Hand.getSize(state.getHandUnsafe(1)));
+        Assert.assertEquals(0, Hand.getSize(state.getHand(0)));
+        Assert.assertEquals(1, Hand.getSize(state.getHand(1)));
         Assert.assertEquals(0, state.getEndingPlayer());
         Assert.assertTrue(state.isFinished());
     }
@@ -142,8 +142,8 @@ public class GameStateTest {
         state.applyMove(Move.hintColor(1, 0));
         Assert.assertEquals(0, state.getDeckSize());
         Assert.assertEquals(hints - 1, state.getHints());
-        Assert.assertEquals(1, Hand.getSize(state.getHandUnsafe(0)));
-        Assert.assertEquals(1, Hand.getSize(state.getHandUnsafe(1)));
+        Assert.assertEquals(1, Hand.getSize(state.getHand(0)));
+        Assert.assertEquals(1, Hand.getSize(state.getHand(1)));
         Assert.assertEquals(0, state.getEndingPlayer());
         Assert.assertTrue(state.isFinished());
     }
@@ -158,9 +158,9 @@ public class GameStateTest {
         GameState state = new GameState(deck, hints, lives, hands, 0, -1, 0, tableau);
         state.applyMove(Move.play(0));
         Assert.assertEquals(1, state.getDeckSize());
-        Assert.assertEquals(2, Hand.getSize(state.getHandUnsafe(0)));
-        Assert.assertEquals(TOP_OF_DECK, Hand.getCard(state.getHandUnsafe(0), 0));
-        Assert.assertEquals(OLD_HAND_CARD, Hand.getCard(state.getHandUnsafe(0), 1));
+        Assert.assertEquals(2, Hand.getSize(state.getHand(0)));
+        Assert.assertEquals(TOP_OF_DECK, Hand.getCard(state.getHand(0), 0));
+        Assert.assertEquals(OLD_HAND_CARD, Hand.getCard(state.getHand(0), 1));
         Assert.assertEquals(-1, state.getEndingPlayer());
         Assert.assertFalse(state.isFinished());
         Assert.assertEquals(CardMultiSet.EMPTY, state.getDiscard());
@@ -200,9 +200,9 @@ public class GameStateTest {
         Assert.assertEquals(1, state.getDeckSize());
         Assert.assertEquals(hints, state.getHints());
         Assert.assertEquals(lives - 1, state.getLives());
-        Assert.assertEquals(2, Hand.getSize(state.getHandUnsafe(0)));
-        Assert.assertEquals(TOP_OF_DECK, Hand.getCard(state.getHandUnsafe(0), 0));
-        Assert.assertEquals(OLD_HAND_CARD, Hand.getCard(state.getHandUnsafe(0), 1));
+        Assert.assertEquals(2, Hand.getSize(state.getHand(0)));
+        Assert.assertEquals(TOP_OF_DECK, Hand.getCard(state.getHand(0), 0));
+        Assert.assertEquals(OLD_HAND_CARD, Hand.getCard(state.getHand(0), 1));
         Assert.assertEquals(-1, state.getEndingPlayer());
         Assert.assertEquals(0, state.getScore());
         Assert.assertEquals(Tableau.EMPTY, state.getTableau());

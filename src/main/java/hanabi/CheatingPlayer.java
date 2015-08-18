@@ -6,8 +6,10 @@ package hanabi;
  * (actually could be a bit better with brute force planning)
  */
 public class CheatingPlayer implements Player {
+    private GameStateView state;
+    
     @Override
-    public int getMove(GameState state) {
+    public int getMove() {
         int myHand = state.getHandUnsafe(state.getCurrentPlayer());
         int myHandSize = Hand.getSize(myHand);
         int tableau = state.getTableau();
@@ -68,7 +70,7 @@ public class CheatingPlayer implements Player {
         return Move.discard(myHandSize - 1);
     }
 
-    private boolean doesAnyoneHavePlayableCard(GameState state) {
+    private boolean doesAnyoneHavePlayableCard(GameStateView state) {
         int tableau = state.getTableau();
         for (int p = 0; p < state.getNumPlayers(); p++) {
             if (p == state.getCurrentPlayer()) {
@@ -86,7 +88,7 @@ public class CheatingPlayer implements Player {
         return false;
     }
 
-    private long combineOtherHands(GameState state) {
+    private long combineOtherHands(GameStateView state) {
         long allCards = CardMultiSet.EMPTY;
         for (int p = 0; p < state.getNumPlayers(); p++) {
             if (p == state.getCurrentPlayer()) {
@@ -104,33 +106,34 @@ public class CheatingPlayer implements Player {
     /**
      * Return some valid hint, used for delaying the game.
      */
-    private int makeValidHint(GameState state) {
+    private int makeValidHint(GameStateView state) {
         int nextPlayer = (state.getCurrentPlayer() + 1) % state.getNumPlayers();
         int color = Card.getColor(Hand.getCard(state.getHand(nextPlayer), 0));
         return Move.hintColor(nextPlayer, color);
     }
 
     @Override
-    public void notifyHintColor(GameState state, int targetPlayer, int sourcePlayer, int color, int which) {
+    public void notifyHintColor(int targetPlayer, int sourcePlayer, int color, int which) {
     }
 
     @Override
-    public void notifyHintNumber(GameState state, int targetPlayer, int sourcePlayer, int number, int which) {
+    public void notifyHintNumber(int targetPlayer, int sourcePlayer, int number, int which) {
     }
 
     @Override
-    public void notifyPlay(GameState state, int card, int position, int player) {
+    public void notifyPlay(int card, int position, int player) {
     }
 
     @Override
-    public void notifyDiscard(GameState state, int card, int position, int player) {
+    public void notifyDiscard(int card, int position, int player) {
     }
 
     @Override
-    public void notifyDraw(GameState state, int card, int player) {
+    public void notifyDraw(int card, int player) {
     }
 
     @Override
-    public void notifyGameStarted(GameState state, int position) {
+    public void notifyGameStarted(GameStateView stateView, int position) {
+        this.state = stateView;
     }
 }

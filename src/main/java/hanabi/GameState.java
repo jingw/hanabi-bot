@@ -8,7 +8,7 @@ import java.util.Random;
 public final class GameState {
     public static final int MAX_HINTS = 8;
     public static final int MAX_LIVES = 3;
-
+    
     private int[] deck;
     private int deckIndex;
     /**
@@ -232,13 +232,6 @@ public final class GameState {
     }
 
     public int getHand(int player) {
-        if (player == currentPlayer) {
-            throw new IllegalStateException("cannot get hand of current player");
-        }
-        return hands[player];
-    }
-
-    public int getHandUnsafe(int player) {
         return hands[player];
     }
 

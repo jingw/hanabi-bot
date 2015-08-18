@@ -21,12 +21,12 @@ public class GameController {
         }
         int numPlayers = players.length;
         for (int i = 0; i < numPlayers; ++i) {
-            players[i].notifyGameStarted(state, i);
+            players[i].notifyGameStarted(new GameStateView(state, i), i);
         }
         while (!state.isFinished()) {
             int player = state.getCurrentPlayer();
-            int hand = state.getHandUnsafe(player);
-            int move = players[player].getMove(state);
+            int hand = state.getHand(player);
+            int move = players[player].getMove();
             int type = Move.getType(move);
             int removedCard;
             switch (type) {
@@ -61,21 +61,21 @@ public class GameController {
             switch (type) {
                 case Move.DISCARD:
                     for (Player p : players) {
-                        p.notifyDiscard(null, removedCard, Move.getPosition(move), player);
-                        p.notifyDraw(null, p == players[player] ? Card.NULL : result, player);
+                        p.notifyDiscard(removedCard, Move.getPosition(move), player);
+                        p.notifyDraw(p == players[player] ? Card.NULL : result, player);
                     }
                     break;
                 case Move.PLAY:
                     for (Player p : players) {
-                        p.notifyPlay(null, removedCard, Move.getPosition(move), player);
-                        p.notifyDraw(null, p == players[player] ? Card.NULL : result, player);
+                        p.notifyPlay(removedCard, Move.getPosition(move), player);
+                        p.notifyDraw(p == players[player] ? Card.NULL : result, player);
                     }
                     break;
                 case Move.HINT_COLOR: {
                     int color = Move.getHintContent(move);
                     int match = Hand.matchCardsColor(hand, color);
                     for (Player p : players) {
-                        p.notifyHintNumber(null, Move.getHintPlayer(move), player, color, match);
+                        p.notifyHintNumber(Move.getHintPlayer(move), player, color, match);
                     }
                     break;
                 }
@@ -83,7 +83,7 @@ public class GameController {
                     int number = Move.getHintContent(move);
                     int match = Hand.matchCardsColor(hand, number);
                     for (Player p : players) {
-                        p.notifyHintNumber(null, Move.getHintPlayer(move), player, number, match);
+                        p.notifyHintNumber(Move.getHintPlayer(move), player, number, match);
                     }
                     break;
                 }

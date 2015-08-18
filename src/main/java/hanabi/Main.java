@@ -4,7 +4,8 @@ import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
-        runTrials();
+//        runTrials();
+        playSimpleGame();
     }
 
     /**
@@ -13,8 +14,8 @@ public class Main {
     private static void playSimpleGame() {
         Random random = new Random();
         random.setSeed(999695);
-        Player[] players = {new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer()};
-        GameState state = new GameState(false, 3, random);
+        Player[] players = {new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer()};
+        GameState state = new GameState(false, 5, random);
         GameController controller = new GameController(state, players, true);
         controller.run();
         System.out.println(controller.getState().getScore());
@@ -26,12 +27,12 @@ public class Main {
      */
     private static void runTrials() {
         final int TRIALS = 1_000_000;
-        Player[] players = {new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer()};
+        Player[] players = {new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer()};
         int[] counts = new int[26];
         Random random = new Random();
         for (int i = 0; i < TRIALS; i++) {
             random.setSeed(i);
-            GameState state = new GameState(false, 3, random);
+            GameState state = new GameState(false, 5, random);
             GameController controller = new GameController(state, players, false);
             controller.run();
             int score = controller.getState().getScore();
