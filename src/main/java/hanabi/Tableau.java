@@ -1,7 +1,7 @@
 package hanabi;
 
 /**
- * Played cards
+ * All cards that have already been played. Represented by using a 3 bit counter per color.
  */
 public class Tableau {
     public static final int EMPTY = 0;

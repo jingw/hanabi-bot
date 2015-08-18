@@ -1,5 +1,9 @@
 package hanabi;
 
+/**
+ * Runs the game by asking each player for move, applying it, and broadcasting the result. Stops
+ * when the game is over.
+ */
 public class GameController {
     private GameState state;
     private Player[] players;

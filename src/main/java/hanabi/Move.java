@@ -1,7 +1,7 @@
 package hanabi;
 
 /**
- * Encode moves into ints
+ * Encode moves into ints. The lowest 2 bits are the type of move, and the rest encode the move.
  */
 public final class Move {
     public static final int DISCARD = 0;

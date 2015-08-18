@@ -1,7 +1,8 @@
 package hanabi;
 
 /**
- * Hand is represented by a bit vector, with each card taking 6 bits.
+ * Hand is represented by a bit vector, with each card taking 6 bits. New cards are always inserted
+ * in position 0, and cards can be discarded from any position.
  */
 public class Hand {
     public static final int EMPTY = -1;

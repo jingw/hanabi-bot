@@ -7,6 +7,9 @@ public class Main {
         runTrials();
     }
 
+    /**
+     * Play a single game
+     */
     private static void playSimpleGame() {
         Random random = new Random();
         random.setSeed(999695);
@@ -18,6 +21,9 @@ public class Main {
         System.out.println(controller.getState().getTurns());
     }
 
+    /**
+     * Play a lot of games and report statistics
+     */
     private static void runTrials() {
         final int TRIALS = 1_000_000;
         Player[] players = {new CheatingPlayer(), new CheatingPlayer(), new CheatingPlayer()};
@@ -38,10 +44,17 @@ public class Main {
         double sum = 0;
         for (int i = 0; i < counts.length; i++) {
             if (counts[i] > 0) {
-                System.out.printf("%d: %.3f%n", i, counts[i] * 100d / TRIALS);
+                double p = (double) counts[i] / TRIALS;
+                double margin = confidenceErrorMargin(p, TRIALS, 1.96);
+                System.out.printf("%d: %.3f +- %.3f%n", i, p * 100, margin * 100);
                 sum += i * counts[i];
             }
         }
         System.out.printf("mean: %.3f%n", sum / TRIALS);
+    }
+
+    private static double confidenceErrorMargin(double pObserved, int n, double z) {
+        double stderr = Math.sqrt(pObserved * (1 - pObserved) / n);
+        return stderr * z;
     }
 }

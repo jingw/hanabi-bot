@@ -1,5 +1,9 @@
 package hanabi;
 
+/**
+ * Stores a multi-set of cards as a single long. Each card is mapped to an index from 0 to 30. Then
+ * we use 2 bits per card to store a count from 0 to 3.
+ */
 public class CardMultiSet {
     public static final long EMPTY = 0;
 

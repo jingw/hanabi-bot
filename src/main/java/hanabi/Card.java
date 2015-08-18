@@ -3,12 +3,16 @@ package hanabi;
 import java.util.Arrays;
 
 /**
- * Card is represented as an int, where the lowest 3 bits are the color, and the next 3 bits are the number.
+ * Card is represented as an int, where the lowest 3 bits are the color, and the next 3 bits are the
+ * number. Both of these are 0-based.
  */
 public final class Card {
+    /**
+     * Which color is the special rainbow color
+     */
     public static final int RAINBOW_COLOR = 5;
     /**
-     * Numbers are represented by 0 to 5, inclusive. RAINBOW_COLOR is the special rainbow color.
+     * Colors are represented by 0 to 5, inclusive. RAINBOW_COLOR is the special rainbow color.
      */
     public static final int NUM_COLORS = 6;
     /**
@@ -21,8 +25,14 @@ public final class Card {
      */
     public static final int NULL = -1;
 
+    /**
+     * Array containing all cards
+     */
     private static final int[] ALL_CARDS;
 
+    /**
+     * How many of each card is in the deck
+     */
     public static final int[] NUM_COUNTS = {3, 2, 2, 2, 1};
 
     static {
