@@ -55,6 +55,7 @@ public class GameStateTest {
         Assert.assertEquals(TOP_OF_DECK, Hand.getCard(state.getHand(0), 0));
         Assert.assertEquals(-1, state.getEndingPlayer());
         Assert.assertFalse(state.isFinished());
+        Assert.assertEquals("[A0]", CardMultiSet.toString(state.getDiscard()));
     }
 
     /**
@@ -152,6 +153,7 @@ public class GameStateTest {
         Assert.assertEquals(OLD_HAND_CARD, Hand.getCard(state.getHand(0), 1));
         Assert.assertEquals(-1, state.getEndingPlayer());
         Assert.assertFalse(state.isFinished());
+        Assert.assertEquals(CardMultiSet.EMPTY, state.getDiscard());
         return state;
     }
 
@@ -194,6 +196,7 @@ public class GameStateTest {
         Assert.assertEquals(-1, state.getEndingPlayer());
         Assert.assertEquals(0, state.getScore());
         Assert.assertEquals(Tableau.EMPTY, state.getTableau());
+        Assert.assertEquals("[A1]", CardMultiSet.toString(state.getDiscard()));
         return state;
     }
 

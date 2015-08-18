@@ -36,7 +36,7 @@ public final class GameState {
     /**
      * bit vector in the same order as ALL_CARDS
      */
-    private long discard;
+    private long discard = CardMultiSet.EMPTY;
     /**
      * played cards, stored using 3 bits per color
      */
@@ -156,12 +156,19 @@ public final class GameState {
 
     private int applyDiscard(int move) {
         int pos = Move.getPosition(move);
-        removeCard(pos);
+        moveToDiscard(pos);
         incrementHints();
-        // TODO update discard
         return drawCard();
     }
 
+    /** Move the card in the given position to the discard */
+    private void moveToDiscard(int pos) {
+        int card = Hand.getCard(hands[currentPlayer], pos);
+        discard = CardMultiSet.increment(discard, card);
+        removeCard(pos);
+    }
+
+    /** Remove the card in the given position */
     private void removeCard(int pos) {
         hands[currentPlayer] = Hand.discard(hands[currentPlayer], pos);
     }
@@ -179,8 +186,8 @@ public final class GameState {
     private int applyPlay(int move) {
         int pos = Move.getPosition(move);
         int card = Hand.getCard(hands[currentPlayer], pos);
-        removeCard(pos);
         if (Tableau.isPlayable(tableau, card)) {
+            removeCard(pos);
             int color = Card.getColor(card), num = Card.getNumber(card);
             // successful play
             tableau = Tableau.increment(tableau, color);
@@ -189,6 +196,7 @@ public final class GameState {
                 incrementHints();
             }
         } else {
+            moveToDiscard(pos);
             lives--;
             if (lives == 0) {
                 finished = true;
@@ -231,6 +239,10 @@ public final class GameState {
         return lives;
     }
 
+    public long getDiscard() {
+        return discard;
+    }
+
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
@@ -265,7 +277,9 @@ public final class GameState {
             }
             result.append(Card.toString(deck[i]));
         }
-        result.append(']');
+        result.append("],");
+
+        result.append("discard=").append(CardMultiSet.toString(discard));
 
         result.append('}');
         return result.toString();
