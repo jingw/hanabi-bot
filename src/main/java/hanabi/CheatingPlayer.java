@@ -8,13 +8,13 @@ package hanabi;
 public class CheatingPlayer implements Player {
     @Override
     public int getMove(GameState state) {
-        int hand = state.getHand(state.getCurrentPlayer());
-        int size = Hand.getSize(hand);
+        int myHand = state.getHandUnsafe(state.getCurrentPlayer());
+        int myHandSize = Hand.getSize(myHand);
         int tableau = state.getTableau();
 
         // if there's a playable card, play it
-        for (int i = 0; i < size; i++) {
-            int card = Hand.getCard(hand, i);
+        for (int i = 0; i < myHandSize; i++) {
+            int card = Hand.getCard(myHand, i);
             if (Tableau.isPlayable(tableau, card)) {
                 return Move.play(i);
             }
@@ -30,8 +30,8 @@ public class CheatingPlayer implements Player {
 
         // if there's an obsolete / duplicate card, throw it away
         long handCards = CardMultiSet.EMPTY;
-        for (int i = 0; i < size; i++) {
-            int card = Hand.getCard(hand, i);
+        for (int i = 0; i < myHandSize; i++) {
+            int card = Hand.getCard(myHand, i);
             if (Tableau.isObsolete(tableau, card)) {
                 return Move.discard(i);
             }
@@ -47,30 +47,33 @@ public class CheatingPlayer implements Player {
         }
 
         // discard a card already in someone's hand
-        long allCards = combineHands(state);
-        for (int i = 0; i < size; i++) {
-            int card = Hand.getCard(hand, i);
-            if (CardMultiSet.getCount(allCards, card) > 1) {
+        long allCards = combineOtherHands(state);
+        for (int i = 0; i < myHandSize; i++) {
+            int card = Hand.getCard(myHand, i);
+            if (CardMultiSet.getCount(allCards, card) > 0) {
                 return Move.discard(i);
             }
         }
 
         // discard a card that wouldn't kill the game
         long discard = state.getDiscard();
-        for (int i = 0; i < size; i++) {
-            int card = Hand.getCard(hand, i);
+        for (int i = 0; i < myHandSize; i++) {
+            int card = Hand.getCard(myHand, i);
             if (CardMultiSet.getCount(discard, card) + 1 < Card.NUM_COUNTS[Card.getNumber(card)]) {
                 return Move.discard(i);
             }
         }
 
         // fall back to discarding oldest. should practically never happen
-        return Move.discard(size - 1);
+        return Move.discard(myHandSize - 1);
     }
 
     private boolean doesAnyoneHavePlayableCard(GameState state) {
         int tableau = state.getTableau();
         for (int p = 0; p < state.getNumPlayers(); p++) {
+            if (p == state.getCurrentPlayer()) {
+                continue;
+            }
             int hand = state.getHand(p);
             int size = Hand.getSize(hand);
             for (int i = 0; i < size; i++) {
@@ -83,9 +86,12 @@ public class CheatingPlayer implements Player {
         return false;
     }
 
-    private long combineHands(GameState state) {
+    private long combineOtherHands(GameState state) {
         long allCards = CardMultiSet.EMPTY;
         for (int p = 0; p < state.getNumPlayers(); p++) {
+            if (p == state.getCurrentPlayer()) {
+                continue;
+            }
             int hand = state.getHand(p);
             int size = Hand.getSize(hand);
             for (int i = 0; i < size; i++) {

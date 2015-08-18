@@ -220,7 +220,13 @@ public final class GameState {
     }
 
     public int getHand(int player) {
-        // TODO need to restrict this information
+        if (player == currentPlayer) {
+            throw new IllegalStateException("cannot get hand of current player");
+        }
+        return hands[player];
+    }
+
+    public int getHandUnsafe(int player) {
         return hands[player];
     }
 
