@@ -1,7 +1,5 @@
 package hanabi;
 
-import scala.util.Random$;
-
 import java.util.Random;
 
 /**
@@ -9,7 +7,7 @@ import java.util.Random;
  */
 public final class GameState {
     public static final int MAX_HINTS = 8;
-    public static final int LIVES = 3;
+    public static final int MAX_LIVES = 3;
 
     private int[] deck;
     private int deckIndex;
@@ -20,7 +18,7 @@ public final class GameState {
     /**
      * how many lives remain
      */
-    private int lives = LIVES;
+    private int lives = MAX_LIVES;
     /**
      * each player's cards
      */
@@ -114,7 +112,8 @@ public final class GameState {
 
         Move.validate(move);
         int result;
-        switch (Move.getType(move)) {
+        int type = Move.getType(move);
+        switch (type) {
             case Move.DISCARD:
                 result = applyDiscard(move);
                 break;
@@ -123,12 +122,25 @@ public final class GameState {
                 break;
             case Move.HINT_COLOR:
             case Move.HINT_NUMBER:
-                // TODO validate that hint is legal, not hinting current player
                 if (hints == 0) {
                     throw new IllegalStateException("no hints");
                 }
+                int targetPlayer = Move.getHintPlayer(move);
+                if (targetPlayer == currentPlayer) {
+                    throw new IllegalArgumentException("cannot hint yourself");
+                }
+                int content = Move.getHintContent(move);
+                if (type == Move.HINT_COLOR) {
+                    if (Hand.matchCardsColor(hands[targetPlayer], content) == 0) {
+                        throw new IllegalArgumentException("no matching color");
+                    }
+                } else {
+                    if (Hand.matchCardsNumber(hands[targetPlayer], content) == 0) {
+                        throw new IllegalArgumentException("no matching number");
+                    }
+                }
                 hints--;
-                result = 0;
+                result = Card.NULL;
                 break;
             default:
                 throw new AssertionError();

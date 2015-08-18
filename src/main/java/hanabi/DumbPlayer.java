@@ -10,7 +10,11 @@ public class DumbPlayer implements Player {
     }
 
     @Override
-    public void notifyHint(int hint) {
+    public void notifyHintColor(int targetPlayer, int sourcePlayer, int color, int which) {
+    }
+
+    @Override
+    public void notifyHintNumber(int targetPlayer, int sourcePlayer, int number, int which) {
     }
 
     @Override

@@ -1,9 +1,15 @@
 package hanabi;
 
+/**
+ * Hand is represented by a bit vector, with each card taking 6 bits.
+ */
 public class Hand {
     public static final int EMPTY = -1;
     public static final int MAX_HAND_SIZE = 5;
 
+    /**
+     * Put a card in position 0
+     */
     public static int append(int hand, int card) {
         int size = getSize(hand);
         if (size >= MAX_HAND_SIZE)
@@ -20,6 +26,9 @@ public class Hand {
         return hand;
     }
 
+    /**
+     * position 0 is the most recently appended card.
+     */
     public static int getCard(int hand, int position) {
         int card = (hand >> (position * 6)) & 0b111111;
         if (card == 0b111111)
@@ -62,5 +71,27 @@ public class Hand {
         }
         result.append(']');
         return result.toString();
+    }
+
+    public static int matchCardsNumber(int hand, int number) {
+        int size = Hand.getSize(hand);
+        int result = 0;
+        for (int i = 0; i < size; i++) {
+            if (Card.getNumber(Hand.getCard(hand, i)) == number) {
+                result |= 1 << i;
+            }
+        }
+        return result;
+    }
+
+    public static int matchCardsColor(int hand, int color) {
+        int size = Hand.getSize(hand);
+        int result = 0;
+        for (int i = 0; i < size; i++) {
+            if (Card.getColor(Hand.getCard(hand, i)) == color) {
+                result |= 1 << i;
+            }
+        }
+        return result;
     }
 }

@@ -25,7 +25,7 @@ public class CheatingPlayer implements Player {
         int hints = state.getHints();
         if (hints > 0 && (state.getDeckSize() <= 11 || hints == GameState.MAX_HINTS)
                 && doesAnyoneHavePlayableCard(state)) {
-            return Move.hintColor(0, 0);
+            return makeValidHint(state);
         }
 
         // if there's an obsolete / duplicate card, throw it away
@@ -43,7 +43,7 @@ public class CheatingPlayer implements Player {
 
         // if anyone has a playable card, hint to buy time
         if (state.getHints() > 0 && doesAnyoneHavePlayableCard(state)) {
-            return Move.hintColor(0, 0);
+            return makeValidHint(state);
         }
 
         // discard a card already in someone's hand
@@ -101,8 +101,21 @@ public class CheatingPlayer implements Player {
         return allCards;
     }
 
+    /**
+     * Return some valid hint, used for delaying the game.
+     */
+    private int makeValidHint(GameState state) {
+        int nextPlayer = (state.getCurrentPlayer() + 1) % state.getNumPlayers();
+        int color = Card.getColor(Hand.getCard(state.getHand(nextPlayer), 0));
+        return Move.hintColor(nextPlayer, color);
+    }
+
     @Override
-    public void notifyHint(int hint) {
+    public void notifyHintColor(int targetPlayer, int sourcePlayer, int color, int which) {
+    }
+
+    @Override
+    public void notifyHintNumber(int targetPlayer, int sourcePlayer, int number, int which) {
     }
 
     @Override
