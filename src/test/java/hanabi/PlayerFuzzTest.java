@@ -11,67 +11,59 @@ import java.util.Random;
 public class PlayerFuzzTest {
     @Test
     public void testCheatingPlayer() {
-        Random random = new Random();
         for (int nPlayers = 2; nPlayers <= 5; nPlayers++) {
             for (boolean rainbow : new boolean[]{true, false}) {
-                for (int trial = 0; trial < 10_000; trial++) {
-                    Player[] players = new Player[nPlayers];
-                    for (int i = 0; i < nPlayers; i++) {
-                        players[i] = new CheatingPlayer();
-                    }
-                    random.setSeed(trial);
-                    GameState state = new GameState(rainbow, nPlayers, random);
-                    GameController controller = new GameController(state, players, false);
-                    controller.run();
-                    // it should be nearly impossible for the cheater to get so few points
-                    Assert.assertTrue(controller.getState().getScore() > 10);
-                    Assert.assertTrue(controller.getState().getTurns() > 10);
-                    // the cheater should never waste a life
-                    Assert.assertEquals(controller.getState().getLives(), GameState.MAX_LIVES);
-                }
+                final int N = nPlayers;
+                Histogram hist = StatisticsCollector.run(
+                        CheatingPlayer::new,
+                        rnd -> new GameState(rainbow, N, rnd),
+                        10_000,
+                        state -> {
+                            // it should be nearly impossible for the cheater to get so few points
+                            Assert.assertTrue(state.getScore() > 10);
+                            Assert.assertTrue(state.getTurns() > 10);
+                            // the cheater should never waste a life
+                            Assert.assertEquals(state.getLives(), GameState.MAX_LIVES);
+                        }
+                );
+                int maxScore = rainbow ? 30 : 25;
+                Assert.assertTrue(hist.mean() > maxScore - 1);
             }
         }
     }
 
     @Test
     public void testDumbPlayer() {
-        Random random = new Random();
         for (int nPlayers = 2; nPlayers <= 5; nPlayers++) {
             for (boolean rainbow : new boolean[]{true, false}) {
-                for (int trial = 0; trial < 10_000; trial++) {
-                    Player[] players = new Player[nPlayers];
-                    for (int i = 0; i < nPlayers; i++) {
-                        players[i] = new DumbPlayer();
-                    }
-                    random.setSeed(trial);
-                    GameState state = new GameState(rainbow, nPlayers, random);
-                    GameController controller = new GameController(state, players, false);
-                    controller.run();
-                    // it should be nearly impossible for the dumb player to get any points
-                    Assert.assertTrue(controller.getState().getScore() < 15);
-                    Assert.assertTrue(controller.getState().getTurns() < 15);
-                    // the dumb player should always end on lives
-                    Assert.assertEquals(controller.getState().getLives(), 0);
-                }
+                final int N = nPlayers;
+                Histogram hist = StatisticsCollector.run(
+                        DumbPlayer::new,
+                        rnd -> new GameState(rainbow, N, rnd),
+                        10_000,
+                        state -> {
+                            // it should be nearly impossible for the dumb player to get any points
+                            Assert.assertTrue(state.getScore() < 15);
+                            Assert.assertTrue(state.getTurns() < 15);
+                            // the dumb player should always end on lives
+                            Assert.assertEquals(state.getLives(), 0);
+                        }
+                );
+                Assert.assertTrue(hist.mean() < 10);
             }
         }
     }
 
     @Test
     public void testSmartPlayer() {
-        Random random = new Random();
         for (int nPlayers = 2; nPlayers <= 5; nPlayers++) {
             for (boolean rainbow : new boolean[]{true, false}) {
-                for (int trial = 0; trial < 10_000; trial++) {
-                    Player[] players = new Player[nPlayers];
-                    for (int i = 0; i < nPlayers; i++) {
-                        players[i] = new SmartPlayer();
-                    }
-                    random.setSeed(trial);
-                    GameState state = new GameState(rainbow, nPlayers, random);
-                    GameController controller = new GameController(state, players, false);
-                    controller.run();
-                }
+                final int N = nPlayers;
+                StatisticsCollector.run(
+                        SmartPlayer::new,
+                        rnd -> new GameState(rainbow, N, rnd),
+                        10_000
+                );
             }
         }
     }

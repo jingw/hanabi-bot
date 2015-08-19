@@ -1,5 +1,7 @@
 package hanabi;
 
+import java.util.function.Supplier;
+
 /**
  * Runs the game by asking each player for move, applying it, and broadcasting the result. Stops
  * when the game is over.
@@ -8,6 +10,18 @@ public class GameController {
     private GameState state;
     private Player[] players;
     private boolean log;
+
+    private static Player[] makePlayers(int n, Supplier<Player> playerFactory) {
+        Player[] players = new Player[n];
+        for (int p = 0; p < n; p++) {
+            players[p] = playerFactory.get();
+        }
+        return players;
+    }
+
+    public GameController(GameState state, Supplier<Player> playerFactory, boolean log) {
+        this(state, makePlayers(state.getNumPlayers(), playerFactory), log);
+    }
 
     public GameController(GameState state, Player[] players, boolean log) {
         if (state.getNumPlayers() != players.length) {
