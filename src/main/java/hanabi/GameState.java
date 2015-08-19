@@ -8,7 +8,7 @@ import java.util.Random;
 public final class GameState {
     public static final int MAX_HINTS = 8;
     public static final int MAX_LIVES = 3;
-    
+
     private int[] deck;
     private int deckIndex;
     /**
@@ -173,14 +173,18 @@ public final class GameState {
         return drawCard();
     }
 
-    /** Move the card in the given position to the discard */
+    /**
+     * Move the card in the given position to the discard
+     */
     private void moveToDiscard(int pos) {
         int card = Hand.getCard(hands[currentPlayer], pos);
         discard = CardMultiSet.increment(discard, card);
         removeCard(pos);
     }
 
-    /** Remove the card in the given position */
+    /**
+     * Remove the card in the given position
+     */
     private void removeCard(int pos) {
         hands[currentPlayer] = Hand.discard(hands[currentPlayer], pos);
     }

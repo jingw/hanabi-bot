@@ -7,7 +7,7 @@ package hanabi;
  */
 public class CheatingPlayer implements Player {
     private GameStateView state;
-    
+
     @Override
     public int getMove() {
         int myHand = state.getHandUnsafe(state.getCurrentPlayer());

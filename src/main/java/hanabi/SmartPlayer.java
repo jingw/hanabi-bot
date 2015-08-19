@@ -32,7 +32,7 @@ public class SmartPlayer implements Player {
         if (discard != -1) {
             return discard;
         }
-        
+
         return discard;
 
         // // if there's an obsolete / duplicate card, throw it away
@@ -75,7 +75,7 @@ public class SmartPlayer implements Player {
         // // fall back to discarding oldest. should practically never happen
         // return Move.discard(myHandSize - 1);
     }
-    
+
     private int makeDiscard() {
         return Move.discard(0);
     }

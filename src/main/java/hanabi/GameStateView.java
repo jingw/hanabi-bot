@@ -1,15 +1,14 @@
 package hanabi;
 
 public class GameStateView {
-    GameState state;
-    int viewingPlayer;
-
+    private GameState state;
+    private int viewingPlayer;
 
     public GameStateView(GameState state, int player) {
         this.state = state;
         this.viewingPlayer = player;
     }
-    
+
     public boolean isFinished() {
         return state.isFinished();
     }
@@ -44,7 +43,7 @@ public class GameStateView {
     public int getHandUnsafe(int player) {
         return state.getHand(player);
     }
-    
+
     public int getTableau() {
         return state.getTableau();
     }
@@ -56,6 +55,4 @@ public class GameStateView {
     public long getDiscard() {
         return state.getDiscard();
     }
-
-
 }
