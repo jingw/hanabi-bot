@@ -54,13 +54,14 @@ public class HumanStylePlayer implements Player {
                     colorLoop:
                     for (int c = 0; c < Card.NUM_COLORS; c++) {
                         long futureHinted = cardsAlreadyHinted;
+                        int futureTableau2 = futureTableau;
                         boolean isLegalHint = false;
                         for (int i = 0; i < size; i++) {
                             int card = Hand.getCard(hand, i);
-                            if (Card.getColor(card) == c) {
+                            int color = Card.getColor(card);
+                            if (color == c) {
                                 isLegalHint = true;
-                                // TODO multi-step hints where one play depends on other
-                                if (!Tableau.isPlayable(futureTableau, card)) {
+                                if (!Tableau.isPlayable(futureTableau2, card)) {
                                     // not playable
                                     continue colorLoop;
                                 }
@@ -68,6 +69,7 @@ public class HumanStylePlayer implements Player {
                                     // already hinted
                                     continue colorLoop;
                                 }
+                                futureTableau2 = Tableau.increment(futureTableau2, color);
                                 futureHinted = CardMultiSet.increment(futureHinted, card);
                             }
                         }
@@ -83,7 +85,6 @@ public class HumanStylePlayer implements Player {
                             int card = Hand.getCard(hand, i);
                             if (Card.getNumber(card) == n) {
                                 isLegalHint = true;
-                                // TODO multi-step hints where one play depends on other
                                 if (!Tableau.isPlayable(futureTableau, card)) {
                                     // not playable
                                     continue numberLoop;
