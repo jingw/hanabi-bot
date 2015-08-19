@@ -23,7 +23,11 @@ public class StatisticsCollector {
             random.setSeed(i);
             GameState state = stateFactory.apply(random);
             GameController controller = new GameController(state, playerFactory, false);
-            controller.run();
+            try {
+                controller.run();
+            } catch (RuntimeException e) {
+                throw new RuntimeException("Failed trial " + i + ", game state " + state, e);
+            }
             int score = controller.getState().getScore();
             hist.increment(score);
             finishHook.accept(state);
