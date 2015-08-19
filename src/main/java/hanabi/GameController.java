@@ -90,17 +90,19 @@ public class GameController {
                     break;
                 case Move.HINT_COLOR: {
                     int color = Move.getHintContent(move);
-                    int match = Hand.matchCardsColor(hand, color);
+                    int target = Move.getHintPlayer(move);
+                    int match = Hand.matchCardsColor(state.getHand(target), color);
                     for (Player p : players) {
-                        p.notifyHintColor(Move.getHintPlayer(move), player, color, match);
+                        p.notifyHintColor(target, player, color, match);
                     }
                     break;
                 }
                 case Move.HINT_NUMBER: {
                     int number = Move.getHintContent(move);
-                    int match = Hand.matchCardsNumber(hand, number);
+                    int target = Move.getHintPlayer(move);
+                    int match = Hand.matchCardsNumber(state.getHand(target), number);
                     for (Player p : players) {
-                        p.notifyHintNumber(Move.getHintPlayer(move), player, number, match);
+                        p.notifyHintNumber(target, player, number, match);
                     }
                     break;
                 }
