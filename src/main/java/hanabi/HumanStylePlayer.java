@@ -24,96 +24,93 @@ public class HumanStylePlayer implements Player {
         }
 
         if (state.getHints() > 0) {
-            // build a set of cards that are already queued to be played
-            long cardsAlreadyHinted = CardMultiSet.EMPTY;
-            for (int p = 0; p < state.getNumPlayers(); p++) {
-                if (p == me) {
-                    continue;
-                }
-                int hand = state.getHand(p);
-                int size = Hand.getSize(hand);
-                int queue = playQueues[p];
-                for (int i = 0; i < size; i++) {
-                    if ((queue & (1 << i)) != 0) {
-                        int card = Hand.getCard(hand, i);
-                        int count = CardMultiSet.getCount(cardsAlreadyHinted, card);
-                        if (count != 0)
-                            throw new AssertionError();
-                        cardsAlreadyHinted = CardMultiSet.increment(cardsAlreadyHinted, card);
-                    }
-                }
-            }
-            // Look for the nearest player that has a playable card, keeping in mind cards that are about to be played
-            int futureTableau = state.getTableau();
-            for (int delta = 1; delta < state.getNumPlayers(); delta++) {
-                int p = (me + delta) % state.getNumPlayers();
-                int hand = state.getHand(p), size = Hand.getSize(hand);
-                if (playQueues[p] == 0) {
-                    // go through all possible hints and see if any work
-                    // playable, not duplicate, not already hinted
-                    colorLoop:
-                    for (int c = 0; c < Card.NUM_COLORS; c++) {
-                        long futureHinted = cardsAlreadyHinted;
-                        int futureTableau2 = futureTableau;
-                        boolean isLegalHint = false;
-                        for (int i = 0; i < size; i++) {
-                            int card = Hand.getCard(hand, i);
-                            int color = Card.getColor(card);
-                            if (color == c) {
-                                isLegalHint = true;
-                                if (!Tableau.isPlayable(futureTableau2, card)) {
-                                    // not playable
-                                    continue colorLoop;
-                                }
-                                if (CardMultiSet.getCount(futureHinted, card) > 0) {
-                                    // already hinted
-                                    continue colorLoop;
-                                }
-                                futureTableau2 = Tableau.increment(futureTableau2, color);
-                                futureHinted = CardMultiSet.increment(futureHinted, card);
-                            }
-                        }
-                        if (isLegalHint) {
-                            return Move.hintColor(p, c);
-                        }
-                    }
-                    numberLoop:
-                    for (int n = 0; n < Card.NUM_NUMBERS; n++) {
-                        long futureHinted = cardsAlreadyHinted;
-                        boolean isLegalHint = false;
-                        for (int i = 0; i < size; i++) {
-                            int card = Hand.getCard(hand, i);
-                            if (Card.getNumber(card) == n) {
-                                isLegalHint = true;
-                                if (!Tableau.isPlayable(futureTableau, card)) {
-                                    // not playable
-                                    continue numberLoop;
-                                }
-                                if (CardMultiSet.getCount(futureHinted, card) > 0) {
-                                    // already hinted
-                                    continue numberLoop;
-                                }
-                                futureHinted = CardMultiSet.increment(futureHinted, card);
-                            }
-                        }
-                        if (isLegalHint) {
-                            return Move.hintNumber(p, n);
-                        }
-                    }
-                } else {
-                    // simulate what this player will play
-                    int position = Integer.numberOfTrailingZeros(playQueues[p]);
-                    int card = Hand.getCard(hand, position);
-                    if (!Tableau.isPlayable(futureTableau, card)) {
-                        throw new AssertionError();
-                    }
-                    futureTableau = Tableau.increment(futureTableau, Card.getColor(card));
-                }
+            int hint = lookForHint();
+            if (hint != Move.NULL) {
+                return hint;
             }
         }
 
         // discard oldest
         return Move.discard(state.getMyHandSize() - 1);
+    }
+
+    /**
+     * Return a CardMultiSet containing all hinted cards. These are cards that are already going to be played.
+     */
+    private long getAllHintedCards() {
+        long cardsAlreadyHinted = CardMultiSet.EMPTY;
+        for (int p = 0; p < state.getNumPlayers(); p++) {
+            if (p == me) {
+                continue;
+            }
+            int hand = state.getHand(p);
+            int size = Hand.getSize(hand);
+            int queue = playQueues[p];
+            for (int i = 0; i < size; i++) {
+                if ((queue & (1 << i)) != 0) {
+                    int card = Hand.getCard(hand, i);
+                    int count = CardMultiSet.getCount(cardsAlreadyHinted, card);
+                    if (count != 0)
+                        throw new AssertionError();
+                    cardsAlreadyHinted = CardMultiSet.increment(cardsAlreadyHinted, card);
+                }
+            }
+        }
+        return cardsAlreadyHinted;
+    }
+
+    private int lookForHint() {
+        long cardsAlreadyHinted = getAllHintedCards();
+
+        // Look for the nearest player that has a playable card, keeping in mind cards that are about to be played
+        int futureTableau = state.getTableau();
+        for (int delta = 1; delta < state.getNumPlayers(); delta++) {
+            int p = (me + delta) % state.getNumPlayers();
+            int hand = state.getHand(p), size = Hand.getSize(hand);
+            if (playQueues[p] == 0) {
+                // go through all possible hints and see if any work
+                // playable, not duplicate, not already hinted
+                for (int type = 0; type < 2; type++) {  // 0 = color, 1 = number
+                    int max = type == 0 ? Card.NUM_COLORS : Card.NUM_NUMBERS;
+                    loop:
+                    for (int what = 0; what < max; what++) {
+                        long futureHinted = cardsAlreadyHinted;
+                        int futureTableau2 = futureTableau;
+                        boolean isLegalHint = false;
+                        for (int i = 0; i < size; i++) {
+                            int card = Hand.getCard(hand, i);
+                            int content = type == 0 ? Card.getColor(card) : Card.getNumber(card);
+                            if (content == what) {
+                                isLegalHint = true;
+                                if (!Tableau.isPlayable(futureTableau2, card)) {
+                                    // not playable
+                                    continue loop;
+                                }
+                                if (CardMultiSet.getCount(futureHinted, card) > 0) {
+                                    // already hinted
+                                    continue loop;
+                                }
+                                futureTableau2 = Tableau.increment(futureTableau2, Card.getColor(card));
+                                futureHinted = CardMultiSet.increment(futureHinted, card);
+                            }
+                        }
+                        if (isLegalHint) {
+                            return type == 0 ? Move.hintColor(p, what) : Move.hintNumber(p, what);
+                        }
+                    }
+                }
+            } else {
+                // simulate what this player will play
+                int position = Integer.numberOfTrailingZeros(playQueues[p]);
+                int card = Hand.getCard(hand, position);
+                if (!Tableau.isPlayable(futureTableau, card)) {
+                    throw new AssertionError();
+                }
+                futureTableau = Tableau.increment(futureTableau, Card.getColor(card));
+            }
+        }
+
+        return Move.NULL;
     }
 
     @Override

@@ -8,6 +8,7 @@ public final class Move {
     public static final int PLAY = 1;
     public static final int HINT_COLOR = 2;
     public static final int HINT_NUMBER = 3;
+    public static final int NULL = -1;
 
     public static int discard(int position) {
         Hand.validatePosition(position);
