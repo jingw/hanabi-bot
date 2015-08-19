@@ -10,6 +10,9 @@ public class GameController {
     private boolean log;
 
     public GameController(GameState state, Player[] players, boolean log) {
+        if (state.getNumPlayers() != players.length) {
+            throw new IllegalArgumentException("num players mismatch");
+        }
         this.state = state;
         this.players = players;
         this.log = log;
@@ -75,18 +78,20 @@ public class GameController {
                     int color = Move.getHintContent(move);
                     int match = Hand.matchCardsColor(hand, color);
                     for (Player p : players) {
-                        p.notifyHintNumber(Move.getHintPlayer(move), player, color, match);
+                        p.notifyHintColor(Move.getHintPlayer(move), player, color, match);
                     }
                     break;
                 }
                 case Move.HINT_NUMBER: {
                     int number = Move.getHintContent(move);
-                    int match = Hand.matchCardsColor(hand, number);
+                    int match = Hand.matchCardsNumber(hand, number);
                     for (Player p : players) {
                         p.notifyHintNumber(Move.getHintPlayer(move), player, number, match);
                     }
                     break;
                 }
+                default:
+                    throw new AssertionError();
             }
         }
     }
