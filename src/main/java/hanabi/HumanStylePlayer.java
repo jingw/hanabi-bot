@@ -30,8 +30,11 @@ public class HumanStylePlayer implements Player {
             }
         }
 
-        // discard oldest
-        return Move.discard(state.getMyHandSize() - 1);
+        // discard second oldest card
+        // with 4 player no rainbow:
+        // oldest: 19.935 +- 0.014
+        // 2nd oldest: 20.099 +- 0.014
+        return Move.discard(state.getMyHandSize() - 2);
     }
 
     /**
