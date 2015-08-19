@@ -33,7 +33,8 @@ public class Main {
         Player[] smartPlayers3 = {new SmartPlayer(), new SmartPlayer(), new SmartPlayer()};
         Player[] smartPlayers4 = {new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer()};
         Player[] smartPlayers5 = {new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer(), new SmartPlayer()};
-        int[] counts = new int[26];
+
+        Histogram hist = new Histogram(31);
         Random random = new Random();
         for (int i = 0; i < TRIALS; i++) {
             random.setSeed(i);
@@ -41,26 +42,12 @@ public class Main {
             GameController controller = new GameController(state, smartPlayers4, false);
             controller.run();
             int score = controller.getState().getScore();
-            counts[score]++;
+            hist.increment(score);
             /*if (score < 25) {
                 System.out.println(i);
             }*/
         }
 
-        double sum = 0;
-        for (int i = 0; i < counts.length; i++) {
-            if (counts[i] > 0) {
-                double p = (double) counts[i] / TRIALS;
-                double margin = confidenceErrorMargin(p, TRIALS, 1.96);
-                System.out.printf("%d: %.3f +- %.3f%n", i, p * 100, margin * 100);
-                sum += i * counts[i];
-            }
-        }
-        System.out.printf("mean: %.3f%n", sum / TRIALS);
-    }
-
-    private static double confidenceErrorMargin(double pObserved, int n, double z) {
-        double stderr = Math.sqrt(pObserved * (1 - pObserved) / n);
-        return stderr * z;
+        hist.dump(1.96, System.out);
     }
 }
