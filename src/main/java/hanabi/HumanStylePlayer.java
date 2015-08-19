@@ -71,6 +71,9 @@ public class HumanStylePlayer implements Player {
             int p = (me + delta) % state.getNumPlayers();
             int hand = state.getHand(p), size = Hand.getSize(hand);
             if (playQueues[p] == 0) {
+                int bestScore = Integer.MIN_VALUE;
+                int bestMove = Move.NULL;
+
                 // go through all possible hints and see if any work
                 // playable, not duplicate, not already hinted
                 for (int type = 0; type < 2; type++) {  // 0 = color, 1 = number
@@ -79,12 +82,14 @@ public class HumanStylePlayer implements Player {
                     for (int what = 0; what < max; what++) {
                         long futureHinted = cardsAlreadyHinted;
                         int futureTableau2 = futureTableau;
-                        boolean isLegalHint = false;
+                        int count = 0;
+                        int minNumber = Integer.MAX_VALUE;
                         for (int i = 0; i < size; i++) {
                             int card = Hand.getCard(hand, i);
-                            int content = type == 0 ? Card.getColor(card) : Card.getNumber(card);
+                            int number = Card.getNumber(card);
+                            int content = type == 0 ? Card.getColor(card) : number;
                             if (content == what) {
-                                isLegalHint = true;
+                                count++;
                                 if (!Tableau.isPlayable(futureTableau2, card)) {
                                     // not playable
                                     continue loop;
@@ -95,12 +100,22 @@ public class HumanStylePlayer implements Player {
                                 }
                                 futureTableau2 = Tableau.increment(futureTableau2, Card.getColor(card));
                                 futureHinted = CardMultiSet.increment(futureHinted, card);
+                                if (number < minNumber) {
+                                    minNumber = number;
+                                }
                             }
                         }
-                        if (isLegalHint) {
-                            return type == 0 ? Move.hintColor(p, what) : Move.hintNumber(p, what);
+                        if (count > 0) {
+                            int score = count - 2 * minNumber;
+                            if (score > bestScore) {
+                                bestMove = type == 0 ? Move.hintColor(p, what) : Move.hintNumber(p, what);
+                                bestScore = score;
+                            }
                         }
                     }
+                }
+                if (bestMove != Move.NULL) {
+                    return bestMove;
                 }
             } else {
                 // simulate what this player will play
