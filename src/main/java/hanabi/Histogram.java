@@ -44,6 +44,19 @@ public class Histogram {
                 out.printf("%d: %.3f +- %.3f%n", i, p * 100, margin * 100);
             }
         }
-        out.printf("mean: %.3f%n", mean());
+        out.printf("mean: %.3f +- %.3f%n", mean(), standardError() * z);
+    }
+
+    public double standardError() {
+        return standardDeviation() / Math.sqrt(n);
+    }
+
+    public double standardDeviation() {
+        double mean = mean();
+        double ssr = 0;
+        for (int i = 0; i < counts.length; i++) {
+            ssr += (i - mean) * (i - mean) * counts[i];
+        }
+        return Math.sqrt(ssr / (n - 1));
     }
 }
