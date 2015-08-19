@@ -67,4 +67,18 @@ public class PlayerFuzzTest {
             }
         }
     }
+
+    @Test
+    public void testHumanStylePlayer() {
+        for (int nPlayers = 2; nPlayers <= 5; nPlayers++) {
+            for (boolean rainbow : new boolean[]{true, false}) {
+                final int N = nPlayers;
+                StatisticsCollector.run(
+                        HumanStylePlayer::new,
+                        rnd -> new GameState(rainbow, N, rnd),
+                        10_000
+                );
+            }
+        }
+    }
 }

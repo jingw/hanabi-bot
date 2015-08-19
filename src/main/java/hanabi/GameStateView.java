@@ -44,6 +44,10 @@ public class GameStateView {
         return state.getHand(player);
     }
 
+    public int getMyHandSize() {
+        return Hand.getSize(state.getHand(viewingPlayer));
+    }
+
     public int getTableau() {
         return state.getTableau();
     }
