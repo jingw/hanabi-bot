@@ -13,6 +13,14 @@ public class GameStateTest {
         Assert.assertEquals(0, state.getCurrentPlayer());
     }
 
+    @Test
+    public void testToString() {
+        GameState state = new GameState(true, 4, RandomUtil.INSTANCE);
+        String s = state.toString();
+        Assert.assertTrue(s.contains("A0"));
+        Assert.assertTrue(s.contains("B4"));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testInitialStateInvalidNumPlayers() {
         new GameState(true, 6, RandomUtil.INSTANCE);
