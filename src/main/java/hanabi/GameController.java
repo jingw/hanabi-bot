@@ -79,13 +79,17 @@ public class GameController {
                 case Move.DISCARD:
                     for (Player p : players) {
                         p.notifyDiscard(removedCard, Move.getPosition(move), player);
-                        p.notifyDraw(p == players[player] ? Card.NULL : result, player);
+                        if (result != Card.NULL) {
+                            p.notifyDraw(p == players[player] ? Card.NULL : result, player);
+                        }
                     }
                     break;
                 case Move.PLAY:
                     for (Player p : players) {
                         p.notifyPlay(removedCard, Move.getPosition(move), player);
-                        p.notifyDraw(p == players[player] ? Card.NULL : result, player);
+                        if (result != Card.NULL) {
+                            p.notifyDraw(p == players[player] ? Card.NULL : result, player);
+                        }
                     }
                     break;
                 case Move.HINT_COLOR: {

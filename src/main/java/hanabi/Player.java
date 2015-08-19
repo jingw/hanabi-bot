@@ -31,7 +31,8 @@ public interface Player {
     void notifyDiscard(int card, int position, int sourcePlayer);
 
     /**
-     * Called when a player draws a card. This will be Card.NULL if you are the one drawing.
+     * Called when a player draws a card. This will be Card.NULL if you are the one drawing. Not
+     * called when the deck is empty and nothing is actually drawn.
      */
     void notifyDraw(int card, int sourcePlayer);
 }
