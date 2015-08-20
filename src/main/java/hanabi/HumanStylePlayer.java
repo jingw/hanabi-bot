@@ -9,6 +9,7 @@ public class HumanStylePlayer extends AbstractPlayer {
      * Gambling requires disabling some useful asserts, so allow turning it off
      */
     private static final boolean ENABLE_GAMBLING = false;
+    private static final boolean ENABLE_FINESSE = true;
 
     /**
      * Return how many cards a hint represents.
@@ -42,6 +43,13 @@ public class HumanStylePlayer extends AbstractPlayer {
         }
 
         if (state.getHints() > 0) {
+            if (ENABLE_FINESSE) {
+                int finesse = lookForFinesseHint();
+                if (finesse != Move.NULL) {
+                    return finesse;
+                }
+            }
+
             int hint = lookForHint();
             if (hint != Move.NULL) {
                 return hint;
@@ -164,23 +172,228 @@ public class HumanStylePlayer extends AbstractPlayer {
         return Move.NULL;
     }
 
+    private int lookForFinesseHint() {
+        long cardsAlreadyHinted = getAllHintedCards();
+        int tableau = state.getTableau();
+        int maxSearch = Math.min(state.getTurnsLeft(), state.getNumPlayers());
+        return lookForFinesseHint(1, maxSearch, cardsAlreadyHinted, tableau, CardMultiSet.EMPTY);
+    }
+
+    /**
+     * @param delta         offset from current player (me)
+     * @param maxSearch     how far to look ahead
+     * @param hinted        set of everything already hinted
+     * @param tableau       current tableau
+     * @param firstCardsSet set of all first cards seen so far. used to avoid ambiguous finesse
+     * @return a move or Move.NULL
+     */
+    private int lookForFinesseHint(final int delta, final int maxSearch, final long hinted,
+                                   final int tableau, final long firstCardsSet) {
+        // TODO fix ambiguous finesse, e.g. players have duplicate first playable cards
+        if (delta == maxSearch) {
+            return Move.NULL;
+        }
+        int p = (position + delta) % state.getNumPlayers();
+        int hand = state.getHand(p);
+        if (playQueues[p] != 0) {
+            // to avoid ambiguity between an ordinary chained hint and a finesse, don't allow
+            // intermediate play queues
+            return Move.NULL;
+        }
+        // check if the first card is playable, not already hinted
+        int firstCard = Hand.getCard(hand, 0);
+        long newFirstCardSet = CardMultiSet.increment(firstCardsSet, firstCard);
+        if (Tableau.isPlayable(tableau, firstCard)
+                && CardMultiSet.getCount(hinted, firstCard) == 0
+                && CardMultiSet.getCount(firstCardsSet, firstCard) == 0) {
+            log("p%d has playable %s in first position", p, Card.toString(firstCard));
+            // look for something to close the finesse
+            int tableau2 = Tableau.increment(tableau, Card.getColor(firstCard));
+            long hinted2 = CardMultiSet.increment(hinted, firstCard);
+            int hint = lookForFinesseFinalizer(
+                    delta + 1, maxSearch, hinted2, tableau2, tableau, p, newFirstCardSet);
+            if (hint != Move.NULL) {
+                return hint;
+            }
+        }
+        // Could not finesse with this card, move on to next player
+        return lookForFinesseHint(delta + 1, maxSearch, hinted, tableau, newFirstCardSet);
+    }
+
+    private int lookForFinesseFinalizer(final int delta, final int maxSearch, final long hinted,
+                                        final int tableau, final int prevTableau,
+                                        final int intermediary, final long firstCardsSet) {
+        if (delta == maxSearch) {
+            return Move.NULL;
+        }
+        int p = (position + delta) % state.getNumPlayers();
+        int hand = state.getHand(p), size = Hand.getSize(hand);
+        if (playQueues[p] != 0) {
+            // to avoid ambiguity between an ordinary chained hint and a finesse, don't allow
+            // intermediate play queues
+            return Move.NULL;
+        }
+        // Go through all possible hints and see if any work with the finesse.
+        for (int type = 0; type < 2; type++) {  // 0 = color, 1 = number
+            int max = type == 0 ? Card.NUM_COLORS : Card.NUM_NUMBERS;
+            loop:
+            for (int what = 0; what < max; what++) {
+                int count = 0;
+                int reliesOnFinesse = 0;
+                int futureTableau = tableau;
+                for (int i = 0; i < size; i++) {
+                    int card = Hand.getCard(hand, i);
+                    int number = Card.getNumber(card);
+                    int content = type == 0 ? Card.getColor(card) : number;
+                    if (content == what) {
+                        count++;
+                        if (!Tableau.isPlayable(futureTableau, card)) {
+                            // not playable
+                            continue loop;
+                        }
+                        if (CardMultiSet.getCount(hinted, card) > 0) {
+                            // already hinted
+                            continue loop;
+                        }
+                        if (!Tableau.isPlayable(prevTableau, card)) {
+                            reliesOnFinesse++;
+                        }
+                        futureTableau = Tableau.increment(futureTableau, Card.getColor(card));
+                    }
+                    if (count >= maxCardsPerHint(type)) {
+                        break;
+                    }
+                }
+                if (reliesOnFinesse > 0) {
+                    log("Hinting finesse p%d -> p%d", intermediary, p);
+                    return type == 0 ? Move.hintColor(p, what) : Move.hintNumber(p, what);
+                }
+            }
+        }
+        int firstCard = Hand.getCard(hand, 0);
+        if (CardMultiSet.getCount(firstCardsSet, firstCard) > 0) {
+            // avoid ambiguity
+            return Move.NULL;
+        }
+        // cannot end finesse with this player. try next one
+        return lookForFinesseFinalizer(
+                delta + 1, maxSearch, hinted, tableau, prevTableau, intermediary, firstCardsSet);
+    }
+
     @Override
     public void notifyHintColor(int targetPlayer, int sourcePlayer, int color, int which) {
+        if (playQueues[sourcePlayer] != 0)
+            throw new AssertionError();
         // assume a hint is a command to play everything
         playQueues[targetPlayer] = BitVectorUtil.lowestSetBits(which, maxCardsPerHint(0));
         if (which == 0) {
             throw new AssertionError();
         }
+        if (ENABLE_FINESSE) {
+            checkForFinesse(targetPlayer);
+        }
     }
 
     @Override
     public void notifyHintNumber(int targetPlayer, int sourcePlayer, int number, int which) {
+        if (playQueues[sourcePlayer] != 0)
+            throw new AssertionError();
         // assume a hint is a command to play everything
         // TODO if card is obviously not playable, interpret as a don't discard hint
         playQueues[targetPlayer] = BitVectorUtil.lowestSetBits(which, maxCardsPerHint(1));
         if (which == 0) {
             throw new AssertionError();
         }
+        if (ENABLE_FINESSE) {
+            checkForFinesse(targetPlayer);
+        }
+    }
+
+    private void checkForFinesse(int target) {
+        int finesse = interpretFinesse(target);
+        if (finesse != -1) {
+            log("Detected finesse p%d -> p%d", finesse, target);
+            if (playQueues[finesse] != 0)
+                throw new AssertionError();
+            playQueues[finesse] = 1; // first card
+        }
+    }
+
+    /**
+     * Return the target player if there is a finesse. Otherwise, return 0.
+     */
+    private int interpretFinesse(int target) {
+        // NB: Everyone except the final player will know that finessed player's queue, so there
+        // won't be any inconsistencies
+
+        // If the card is not playable, and the prerequisite card is not hinted, then there's a
+        // finesse. We require the intermediate card to be not-hinted, and we require that all
+        // intermediate players are idle.
+        if (target == state.getCurrentPlayer()) {
+            // Hinter hinted the player immediately after him
+            return -1;
+        }
+        if (target == position) {
+            // If this is a finesse, I'll find out later when someone plays without a hint.
+            return -1;
+        }
+        // We don't allow finesse with intermediate play queues
+        if (areThereIntermediatePlayQueues(state.getCurrentPlayer(), target)) {
+            return -1;
+        }
+        if (playQueues[target] == 0)
+            throw new AssertionError();
+        int hand = state.getHand(target);
+        int queue = playQueues[target];
+        int tableau = state.getTableau();
+        while (queue != 0) {
+            int position = Integer.numberOfTrailingZeros(queue);
+            queue &= ~(1 << position);
+            int targetCard = Hand.getCard(hand, position);
+            if (Tableau.isPlayable(tableau, targetCard)) {
+                tableau = Tableau.increment(tableau, Card.getColor(targetCard));
+            } else {
+                // figure out who's card would make this work
+                tableau = state.getTableau();
+                int p = state.getCurrentPlayer();
+                boolean iAmInMiddle = false;
+                while (p != target) {
+                    if (p == this.position) {
+                        iAmInMiddle = true;
+                    } else {
+                        int firstCard = Hand.getCard(state.getHand(p), 0);
+                        if (Tableau.isPlayable(tableau, firstCard)) {
+                            int tableau2 = Tableau.increment(tableau, Card.getColor(firstCard));
+                            if (Tableau.isPlayable(tableau2, targetCard)) {
+                                // found the connector
+                                return p;
+                            }
+                        }
+                    }
+                    p = (p + 1) % state.getNumPlayers();
+                }
+                if (!iAmInMiddle)
+                    throw new AssertionError("" + this.position);
+                // I am the intermediary
+                return this.position;
+            }
+        }
+        // every card checked out
+        return -1;
+    }
+
+    /**
+     * Return true if anyone in [start, end) has as play queue.
+     */
+    private boolean areThereIntermediatePlayQueues(int start, int end) {
+        int p = start;
+        while (p != end) {
+            if (playQueues[p] != 0) {
+                return true;
+            }
+            p = (p + 1) % state.getNumPlayers();
+        }
+        return false;
     }
 
     @Override
@@ -190,8 +403,12 @@ public class HumanStylePlayer extends AbstractPlayer {
             if (state.getLives() != GameState.MAX_LIVES) {
                 throw new AssertionError();
             }
-            if ((playQueues[sourcePlayer] & (1 << position)) == 0)
-                throw new AssertionError();
+            if ((playQueues[sourcePlayer] & (1 << position)) == 0) {
+                if (position != 0 || !ENABLE_FINESSE) {
+                    throw new AssertionError();
+                }
+                log("Assuming p%d was part of a finesse ending on me", sourcePlayer);
+            }
         }
         // remove from queue
         playQueues[sourcePlayer] = BitVectorUtil.deleteAndShift(playQueues[sourcePlayer], position);

@@ -25,7 +25,7 @@ public class StatisticsCollector {
             GameController controller = new GameController(state, playerFactory, false);
             try {
                 controller.run();
-            } catch (RuntimeException e) {
+            } catch (RuntimeException | AssertionError e) {
                 throw new RuntimeException("Failed trial " + i + ", game state " + state, e);
             }
             int score = controller.getState().getScore();
