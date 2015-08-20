@@ -3,18 +3,15 @@ package hanabi;
 /**
  * Uses "Hint all first playables mod 5" strategy.
  */
-public class SmartPlayer implements Player {
-    private int position;
+public class SmartPlayer extends AbstractPlayer {
     private int firstPlayable;
     private int firstDiscardable;
     private int[] otherPlayers;
-    private GameStateView state;
     private PlayerView[] playerViews;
 
     @Override
     public void notifyGameStarted(GameStateView stateView, int position) {
-        this.state = stateView;
-        this.position = position;
+        super.notifyGameStarted(stateView, position);
         int numPlayers = state.getNumPlayers();
         otherPlayers = new int[numPlayers - 1];
         int pos = 0;

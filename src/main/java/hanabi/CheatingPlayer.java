@@ -5,9 +5,7 @@ package hanabi;
  * This represents the best one could possibly do in Hanabi.
  * (actually could be a bit better with brute force planning)
  */
-public class CheatingPlayer implements Player {
-    private GameStateView state;
-
+public class CheatingPlayer extends AbstractPlayer {
     @Override
     public int getMove() {
         int myHand = state.getHandUnsafe(state.getCurrentPlayer());
@@ -110,30 +108,5 @@ public class CheatingPlayer implements Player {
         int nextPlayer = (state.getCurrentPlayer() + 1) % state.getNumPlayers();
         int color = Card.getColor(Hand.getCard(state.getHand(nextPlayer), 0));
         return Move.hintColor(nextPlayer, color);
-    }
-
-    @Override
-    public void notifyHintColor(int targetPlayer, int sourcePlayer, int color, int which) {
-    }
-
-    @Override
-    public void notifyHintNumber(int targetPlayer, int sourcePlayer, int number, int which) {
-    }
-
-    @Override
-    public void notifyPlay(int card, int position, int player) {
-    }
-
-    @Override
-    public void notifyDiscard(int card, int position, int player) {
-    }
-
-    @Override
-    public void notifyDraw(int card, int player) {
-    }
-
-    @Override
-    public void notifyGameStarted(GameStateView stateView, int position) {
-        this.state = stateView;
     }
 }

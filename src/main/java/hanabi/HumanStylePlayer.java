@@ -3,23 +3,20 @@ package hanabi;
 /**
  * Plays Hanabi like humans do.
  */
-public class HumanStylePlayer implements Player {
-    private GameStateView state;
-    private int me;
+public class HumanStylePlayer extends AbstractPlayer {
     private int[] playQueues;
 
     @Override
     public void notifyGameStarted(GameStateView state, int position) {
-        this.state = state;
-        me = position;
+        super.notifyGameStarted(state, position);
         playQueues = new int[state.getNumPlayers()];
     }
 
     @Override
     public int getMove() {
         // if there's a queued card to play, play it
-        if (playQueues[me] != 0) {
-            int position = Integer.numberOfTrailingZeros(playQueues[me]);
+        if (playQueues[position] != 0) {
+            int position = Integer.numberOfTrailingZeros(playQueues[this.position]);
             return Move.play(position);
         }
 
@@ -43,7 +40,7 @@ public class HumanStylePlayer implements Player {
     private long getAllHintedCards() {
         long cardsAlreadyHinted = CardMultiSet.EMPTY;
         for (int p = 0; p < state.getNumPlayers(); p++) {
-            if (p == me) {
+            if (p == position) {
                 continue;
             }
             int hand = state.getHand(p);
@@ -68,7 +65,7 @@ public class HumanStylePlayer implements Player {
         // Look for the nearest player that has a playable card, keeping in mind cards that are about to be played
         int futureTableau = state.getTableau();
         for (int delta = 1; delta < state.getNumPlayers(); delta++) {
-            int p = (me + delta) % state.getNumPlayers();
+            int p = (position + delta) % state.getNumPlayers();
             int hand = state.getHand(p), size = Hand.getSize(hand);
             if (playQueues[p] == 0) {
                 int bestScore = Integer.MIN_VALUE;
@@ -107,6 +104,8 @@ public class HumanStylePlayer implements Player {
                         }
                         if (count > 0) {
                             int score = count - 2 * minNumber;
+                            log("Hint type %d, content %d, target %d: score=%d, cards=%d, minNumber=%d",
+                                    type, what, p, score, count, minNumber);
                             if (score > bestScore) {
                                 bestMove = type == 0 ? Move.hintColor(p, what) : Move.hintNumber(p, what);
                                 bestScore = score;
