@@ -30,11 +30,14 @@ public class Main {
      */
     private static void runTrials() {
         final int TRIALS = 11_000;
-        Histogram hist = StatisticsCollector.run(
+        StatisticsCollector collector = new StatisticsCollector();
+        collector.run(
                 SmartPlayer::new,
                 rnd -> new GameState(false, 4, rnd),
                 TRIALS
         );
-        hist.dump(1.96, System.out);
+        collector.getDiscardHist().dump(1.96, System.out);
+        collector.getDiscardFiveHist().dump(1.96, System.out);
+        collector.getScoreHist().dump(1.96, System.out);
     }
 }
