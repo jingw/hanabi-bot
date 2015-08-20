@@ -59,4 +59,8 @@ public class GameStateView {
     public long getDiscard() {
         return state.getDiscard();
     }
+
+    public int getTurnsLeft() {
+        return state.getTurnsLeft();
+    }
 }

@@ -303,4 +303,18 @@ public final class GameState {
     public int getTurns() {
         return turns;
     }
+
+    /**
+     * If game end has been triggered, return the number of turns left. If the game has ended,
+     * return zero. Otherwise, return Integer.MAX_VALUE.
+     */
+    public int getTurnsLeft() {
+        if (endingPlayer == -1) {
+            return Integer.MAX_VALUE;
+        } else if (finished) {
+            return 0;
+        } else {
+            return (endingPlayer - currentPlayer + hands.length) % hands.length + 1;
+        }
+    }
 }

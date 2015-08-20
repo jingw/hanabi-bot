@@ -4,6 +4,8 @@ package hanabi;
  * Plays Hanabi like humans do.
  */
 public class HumanStylePlayer extends AbstractPlayer {
+    private static final int MAX_TURNS_LEFT_FOR_GAMBLE_PLAY = 4;
+
     private int[] playQueues;
 
     @Override
@@ -25,6 +27,12 @@ public class HumanStylePlayer extends AbstractPlayer {
             if (hint != Move.NULL) {
                 return hint;
             }
+        }
+
+        // if the game is going to end anyways, and I have no useful hint to give, play a card and
+        // hope for the best.
+        if (state.getTurnsLeft() <= MAX_TURNS_LEFT_FOR_GAMBLE_PLAY) {
+            return Move.play(0);
         }
 
         // discard second oldest card
@@ -64,7 +72,8 @@ public class HumanStylePlayer extends AbstractPlayer {
 
         // Look for the nearest player that has a playable card, keeping in mind cards that are about to be played
         int futureTableau = state.getTableau();
-        for (int delta = 1; delta < state.getNumPlayers(); delta++) {
+        int maxSearch = Math.min(state.getTurnsLeft(), state.getNumPlayers());
+        for (int delta = 1; delta < maxSearch; delta++) {
             int p = (position + delta) % state.getNumPlayers();
             int hand = state.getHand(p), size = Hand.getSize(hand);
             if (playQueues[p] == 0) {
@@ -120,9 +129,6 @@ public class HumanStylePlayer extends AbstractPlayer {
                 // simulate what this player will play
                 int position = Integer.numberOfTrailingZeros(playQueues[p]);
                 int card = Hand.getCard(hand, position);
-                if (!Tableau.isPlayable(futureTableau, card)) {
-                    throw new AssertionError();
-                }
                 futureTableau = Tableau.increment(futureTableau, Card.getColor(card));
             }
         }
@@ -151,13 +157,7 @@ public class HumanStylePlayer extends AbstractPlayer {
 
     @Override
     public void notifyPlay(int card, int position, int sourcePlayer) {
-        // this algorithm should never blow up
-        if (state.getLives() != GameState.MAX_LIVES) {
-            throw new AssertionError();
-        }
         // remove from queue
-        if ((playQueues[sourcePlayer] & (1 << position)) == 0)
-            throw new AssertionError();
         playQueues[sourcePlayer] = BitVectorUtil.deleteAndShift(playQueues[sourcePlayer], position);
     }
 

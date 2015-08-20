@@ -11,6 +11,7 @@ public class GameStateTest {
         Assert.assertEquals(GameState.MAX_HINTS, state.getHints());
         Assert.assertEquals(60 - 4 * 4, state.getDeckSize());
         Assert.assertEquals(0, state.getCurrentPlayer());
+        Assert.assertEquals(Integer.MAX_VALUE, state.getTurnsLeft());
     }
 
     @Test
@@ -93,6 +94,7 @@ public class GameStateTest {
         Assert.assertEquals(TOP_OF_DECK, Hand.getCard(state.getHand(0), 0));
         Assert.assertEquals(0, state.getEndingPlayer());
         Assert.assertFalse(state.isFinished());
+        Assert.assertEquals(1, state.getTurnsLeft());
     }
 
     /**
@@ -114,6 +116,7 @@ public class GameStateTest {
         Assert.assertEquals(0, state.getEndingPlayer());
         Assert.assertEquals(0, state.getCurrentPlayer());
         Assert.assertFalse(state.isFinished());
+        Assert.assertEquals(1, state.getTurnsLeft());
     }
 
     /**
@@ -134,6 +137,7 @@ public class GameStateTest {
         Assert.assertEquals(1, Hand.getSize(state.getHand(1)));
         Assert.assertEquals(0, state.getEndingPlayer());
         Assert.assertTrue(state.isFinished());
+        Assert.assertEquals(0, state.getTurnsLeft());
     }
 
     /**
@@ -154,6 +158,7 @@ public class GameStateTest {
         Assert.assertEquals(1, Hand.getSize(state.getHand(1)));
         Assert.assertEquals(0, state.getEndingPlayer());
         Assert.assertTrue(state.isFinished());
+        Assert.assertEquals(0, state.getTurnsLeft());
     }
 
     private GameState runSuccessPlayTest(int handCard, int tableau) {
