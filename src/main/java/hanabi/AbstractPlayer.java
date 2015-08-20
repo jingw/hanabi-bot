@@ -2,7 +2,7 @@ package hanabi;
 
 public abstract class AbstractPlayer implements Player {
     protected GameStateView state;
-    protected int position;
+    protected int me;
     protected boolean log;
 
     public void setLoggingEnabled(boolean log) {
@@ -15,7 +15,7 @@ public abstract class AbstractPlayer implements Player {
 
     protected void log(String msg, Object... args) {
         if (log) {
-            System.out.printf("[p%d] ", position);
+            System.out.printf("[p%d] ", me);
             System.out.printf(msg + "%n", args);
         }
     }
@@ -23,7 +23,7 @@ public abstract class AbstractPlayer implements Player {
     @Override
     public void notifyGameStarted(GameStateView state, int position) {
         this.state = state;
-        this.position = position;
+        this.me = position;
     }
 
     @Override

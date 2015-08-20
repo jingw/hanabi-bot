@@ -41,8 +41,8 @@ public class HumanStylePlayer extends AbstractPlayer {
     @Override
     public int getMove() {
         // if there's a queued card to play, play it
-        if (playQueues[position] != 0) {
-            int position = Integer.numberOfTrailingZeros(playQueues[this.position]);
+        if (playQueues[me] != 0) {
+            int position = Integer.numberOfTrailingZeros(playQueues[this.me]);
             return Move.play(position);
         }
 
@@ -79,7 +79,7 @@ public class HumanStylePlayer extends AbstractPlayer {
     private long getAllHintedCards() {
         long cardsAlreadyHinted = CardMultiSet.EMPTY;
         for (int p = 0; p < state.getNumPlayers(); p++) {
-            if (p == position) {
+            if (p == me) {
                 continue;
             }
             int hand = state.getHand(p);
@@ -105,7 +105,7 @@ public class HumanStylePlayer extends AbstractPlayer {
         int futureTableau = state.getTableau();
         int maxSearch = Math.min(state.getTurnsLeft(), state.getNumPlayers());
         for (int delta = 1; delta < maxSearch; delta++) {
-            int p = (position + delta) % state.getNumPlayers();
+            int p = (me + delta) % state.getNumPlayers();
             int hand = state.getHand(p), size = Hand.getSize(hand);
             if (playQueues[p] == 0) {
                 int bestScore = Integer.MIN_VALUE;
@@ -197,7 +197,7 @@ public class HumanStylePlayer extends AbstractPlayer {
         if (delta == maxSearch) {
             return Move.NULL;
         }
-        int p = (position + delta) % state.getNumPlayers();
+        int p = (me + delta) % state.getNumPlayers();
         int hand = state.getHand(p);
         if (playQueues[p] != 0) {
             // to avoid ambiguity between an ordinary chained hint and a finesse, don't allow
@@ -230,7 +230,7 @@ public class HumanStylePlayer extends AbstractPlayer {
         if (delta == maxSearch) {
             return Move.NULL;
         }
-        int p = (position + delta) % state.getNumPlayers();
+        int p = (me + delta) % state.getNumPlayers();
         int hand = state.getHand(p), size = Hand.getSize(hand);
         if (playQueues[p] != 0) {
             // to avoid ambiguity between an ordinary chained hint and a finesse, don't allow
@@ -337,7 +337,7 @@ public class HumanStylePlayer extends AbstractPlayer {
             // Hinter hinted the player immediately after him
             return -1;
         }
-        if (target == position) {
+        if (target == me) {
             // If this is a finesse, I'll find out later when someone plays without a hint.
             return -1;
         }
@@ -362,7 +362,7 @@ public class HumanStylePlayer extends AbstractPlayer {
                 int p = state.getCurrentPlayer();
                 boolean iAmInMiddle = false;
                 while (p != target) {
-                    if (p == this.position) {
+                    if (p == this.me) {
                         iAmInMiddle = true;
                     } else {
                         int firstCard = Hand.getCard(state.getHand(p), 0);
@@ -377,9 +377,9 @@ public class HumanStylePlayer extends AbstractPlayer {
                     p = (p + 1) % state.getNumPlayers();
                 }
                 if (!iAmInMiddle)
-                    throw new AssertionError("" + this.position);
+                    throw new AssertionError("" + this.me);
                 // I am the intermediary
-                return this.position;
+                return this.me;
             }
         }
         // every card checked out

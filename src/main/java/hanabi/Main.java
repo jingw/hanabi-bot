@@ -5,7 +5,7 @@ import java.util.Random;
 public class Main {
     public static void main(String[] args) {
         runTrials();
-        //playSimpleGame();
+//        playSimpleGame();
     }
 
     /**
@@ -13,10 +13,10 @@ public class Main {
      */
     private static void playSimpleGame() {
         Random random = new Random();
-        random.setSeed(999695);
+        random.setSeed(71);
         GameState state = new GameState(false, 4, random);
         GameController controller = new GameController(state, () -> {
-            AbstractPlayer p = new HumanStylePlayer();
+            AbstractPlayer p = new SmartPlayer();
             p.setLoggingEnabled(true);
             return p;
         }, true);
@@ -34,7 +34,7 @@ public class Main {
         collector.run(
                 SmartPlayer::new,
                 rnd -> new GameState(false, 4, rnd),
-                TRIALS
+                TRIALS * 5
         );
         collector.getDiscardHist().dump(1.96, System.out);
         collector.getDiscardFiveHist().dump(1.96, System.out);

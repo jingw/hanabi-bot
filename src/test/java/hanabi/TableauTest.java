@@ -16,7 +16,7 @@ public class TableauTest {
             Assert.assertEquals(c, Tableau.getCount(tableau, c));
         }
     }
-
+ 
     @Test(expected = IllegalArgumentException.class)
     public void testIncrementTooMany() {
         int tableau = Tableau.EMPTY;
