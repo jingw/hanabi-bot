@@ -11,9 +11,9 @@ public class StatisticsCollector {
     private Histogram discard_five_hist = new Histogram(31, "Bad discards of 5s");
     private Histogram lives_hist = new Histogram(31, "Remaining lives");
     private Histogram first_discard_hist
-        = new Histogram(31, "Turn number of first bad discard / 5");
+        = new Histogram(31, "Turn number of first bad discard", 5);
     private Histogram first_discard_cards_played_hist
-        = new Histogram(31, "Cards played before first bad discard / 5");
+        = new Histogram(31, "Cards played before first bad discard", 5);
 
     public Histogram getScoreHist() {
         return score_hist;
@@ -66,9 +66,9 @@ public class StatisticsCollector {
             discard_five_hist.increment(controller.getState().overDiscards(4));
             lives_hist.increment(controller.getState().getLives());
             if (controller.getState().getFirstBadDiscard() >= 0) {
-                first_discard_hist.increment(controller.getState().getFirstBadDiscard() / 5);
+                first_discard_hist.increment(controller.getState().getFirstBadDiscard());
                 first_discard_cards_played_hist.increment(
-                    controller.getState().getCardsPlayedAtFirstBadDiscard() / 5);
+                    controller.getState().getCardsPlayedAtFirstBadDiscard());
             }
             finishHook.accept(state);
         }

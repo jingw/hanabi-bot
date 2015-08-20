@@ -9,18 +9,25 @@ public class Histogram {
     private int[] counts;
     private int n;
     private String name;
+    private int increment;
 
     public Histogram(int buckets, String name) {
+        this(buckets, name, 1);
+    }
+
+    public Histogram(int buckets, String name, int increment) {
         counts = new int[buckets];
         this.name = name;
+        this.increment = increment;
     }
 
     public void increment(int bucket) {
-        counts[bucket]++;
+        counts[bucket / increment]++;
         n++;
     }
 
     public double mean() {
+        assert(increment == 1);
         if (n < 1) {
             throw new IllegalStateException("Not enough samples");
         }
@@ -47,11 +54,18 @@ public class Histogram {
             if (counts[i] > 0) {
                 double p = proportion(i);
                 double margin = proportionUncertainty(i, z);
-                out.printf("  %d: %.3f +- %.3f%n", i, p * 100, margin * 100);
+                if (increment == 1)
+                    out.printf("  %d: %.3f +- %.3f%n", i, p * 100, margin * 100);
+                else
+                    out.printf("  %d-%d: %.3f +- %.3f%n",
+                               i*increment, (i+1)*increment - 1, p * 100, margin * 100);
             }
         }
-        out.printf("  mean: %.3f +- %.3f%n", mean(), standardError() * z);
-        out.printf("  median: %d%n", percentile(0.5));
+        if (increment == 1) {
+            // Stats are broken for other increments right now.
+            out.printf("  mean: %.3f +- %.3f%n", mean(), standardError() * z);
+            out.printf("  median: %d%n", percentile(0.5));
+        }
     }
 
     public double standardError() {
