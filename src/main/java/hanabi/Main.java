@@ -13,8 +13,8 @@ public class Main {
      */
     private static void playSimpleGame() {
         Random random = new Random();
-        random.setSeed(71);
-        GameState state = new GameState(false, 4, random);
+        random.setSeed(31756);
+        GameState state = new GameState(false, 5, random);
         GameController controller = new GameController(state, () -> {
             AbstractPlayer p = new SmartPlayer();
             p.setLoggingEnabled(true);

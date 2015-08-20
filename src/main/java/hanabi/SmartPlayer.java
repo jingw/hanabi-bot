@@ -88,11 +88,6 @@ public class SmartPlayer extends AbstractPlayer {
             if ((fives & (1 << i)) > 0) {
                 ++numfives;
                 someFive = i;
-                int cheatHand = state.getHandUnsafe(me);
-                if (Card.getNumber(Hand.getCard(cheatHand, i)) != 4) {
-                    System.out.println("WTF");
-//                    throw new AssertionError();
-                }
             }
         }
         
@@ -124,37 +119,46 @@ public class SmartPlayer extends AbstractPlayer {
                     }
                 }
                 if (count >= 2) {
-//                    anyDoubleFives += 1;
+                    anyDoubleFives += 1;
                 }
             }
-            if (anyDoubleFives != 1) {
+            if (anyDoubleFives != 2) {
                 return play;
             }
         }
         
         int numfours = 0;
         int numtot = 0;
-        for(int i = 0; i < Card.NUM_COLORS; ++i) {
+        for(int i = 0; i < 5; ++i) {
+            boolean seen = false;
+            for(int player: otherPlayers) {
+                int hand = state.getHand(player);
+                for (int j = 0; j < Hand.getSize(hand); ++j) {
+                    int card = Hand.getCard(hand, j);
+                    if (Card.getNumber(card) == 4) {
+                        if (Card.getColor(card) == i) {
+                            seen = true;
+                        }
+                    }
+                }
+            }
             int cnt = Tableau.getCount(state.getTableau(), i);
-            if (cnt <= 3)
-                ++numtot;
-            if (cnt == 3) {
+            if (cnt == 5) {
+                seen = true;
+            }
+            
+            if (seen) continue;
+            ++numtot;
+            if (cnt == 4) {
                 ++numfours;
             }
         }
         
-        double p = 1;
-        p /= numtot;
-        if (yolo != -1 && cardsLeft == 0 && (p >= 1 || (lives > 1 && p > 0))) {
-//            System.out.println("yolo p="+p);
+        double p = (double)(numfours) / numtot;
+        if (yolo != -1 && cardsLeft == 0 && (p >= .8 || (lives > 1 && p > 0))) {
             return yolo;
         }
-//        if (numfives > 1) {
-////            throw new RuntimeException();
-//            System.out.println("YOLO");
-//            return yolo;
-//        }
-        
+
         if (play == -1 && numfives == 1) {
 
         }
@@ -176,10 +180,11 @@ public class SmartPlayer extends AbstractPlayer {
 
         
         if (goodDiscard != -1) {
-//            System.out.println("Good discard");
             return goodDiscard;
         }
-//        System.out.println("Random  discard");
+        if (safeDiscard != -1)  {
+            return safeDiscard;
+        }
         return randomDiscard;
         
     }
@@ -199,10 +204,6 @@ public class SmartPlayer extends AbstractPlayer {
 
         // if anyone has a playable card, and the deck is thin, hint to buy time
         int hints = state.getHints() - 1; // this does surprisingly well
-        if (state.getDeckSize() < 5) {
-//            hints -= 1;
-        }
-//        int hints = state.getHints();
         int playHint = makePlayHint();
         int discardHint = makeDiscardHint();
         int safeDiscard = makeSafeDiscard();
@@ -212,8 +213,8 @@ public class SmartPlayer extends AbstractPlayer {
         // if can prevent life loss, do it.
         boolean willDie = isNextPlayObsolete();
 
-        if (willDie && hints > 0 && playHint != -1 && state.getLives() <= 1) {
-            //System.out.println("Saving a life.");
+        if (willDie && hints > 0 && playHint != -1 && state.getLives() <= 2) {
+//            System.out.println("Saving a life.");
             return playHint;
         }
 
@@ -261,15 +262,15 @@ public class SmartPlayer extends AbstractPlayer {
     private int getPlayHintPower() {
         int count = 0;
         int previousCard = -1;
-        int distance = 0;
         for (int player : otherPlayers) {
             int playable = getFirstPlayable(player);
             if (playable != -1) {
                 int card = Hand.getCard(state.getHand(player), playable);
                 if (card == previousCard) {
                     count -= 1;
-                    int penalty = 3 - distance * 3;
-                    if (penalty > 0) {
+                    int penalty = 2;
+                    int lives = state.getLives();
+                    if (penalty > 0 && lives <= 2) {
                         count -= penalty;
                     }
                 }
@@ -333,6 +334,7 @@ public class SmartPlayer extends AbstractPlayer {
     }
     
     private int makeSafeDiscard() {
+//        return makeCheatingDiscard();
         for (int i = 0; i < state.getMyHandSize(); ++i) {
             if ((safeToDiscard & (1 << i)) != 0) {
                 return Move.discard(i);
@@ -447,25 +449,40 @@ public class SmartPlayer extends AbstractPlayer {
         return sum;
     }
 
-    private int getFirstDiscardable(int player) {
+    private int discardScore(int card) {
         int tableau = state.getTableau();
+        if (Tableau.isObsolete(tableau, card)) {
+            return 5;
+        }
+//        return 4;
+
+        int inDeck = Card.NUM_COUNTS[Card.getNumber(card)];
+        int left = inDeck - CardMultiSet.getCount(state.getDiscard(), card);
+        return left - 1;
+    }
+    
+    private int getFirstDiscardable(int player) {
         int hand = state.getHand(player);
         int size = Hand.getSize(hand);
+        int bestdiscard = -1;
+        int bestscore = 0;
         for (int i = 0; i < size; i++) {
             int card = Hand.getCard(hand, i);
-            if (Tableau.isObsolete(tableau, card)) {
-                return i;
+            int score = discardScore(card);
+            if (score > bestscore) {
+                bestscore = score;
+                bestdiscard = i;
             }
         }
-        return -1;
+        return bestdiscard;
     }
 
     private int rankPriority(int rank) {
 //         return 0;
-////        if (rank == 4)
-////            return 0;
-////        else
-            return rank + 1;
+        if (rank == 4) {
+            return 4;
+        }
+        return rank + 1;
     }
 
     private int getFirstPlayable(int player) {
