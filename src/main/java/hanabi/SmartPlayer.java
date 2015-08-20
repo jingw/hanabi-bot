@@ -76,7 +76,7 @@ public class SmartPlayer implements Player {
         boolean willDie = isNextPlayObsolete();
 
         if (willDie && hints > 0 && playHint != -1 && state.getLives() <= 3) {
-            System.out.println("Saving a life.");
+            //System.out.println("Saving a life.");
             return playHint;
         }
 
@@ -99,7 +99,7 @@ public class SmartPlayer implements Player {
 
         // if there's a discardable card, discard it
         if (goodDiscard != -1 && state.getDeckSize() >= 2) {
-            System.out.println("informed discard");
+            //System.out.println("informed discard");
             return goodDiscard;
         }
 
@@ -108,11 +108,11 @@ public class SmartPlayer implements Player {
             if (bestHint != -1) {
                 return bestHint;
             } else {
-                System.out.println("No hint.");
+                //System.out.println("No hint.");
             }
         }
 
-        System.out.println("Random discard.");
+        //System.out.println("Random discard.");
         return randomDiscard;
     }
 
@@ -157,8 +157,8 @@ public class SmartPlayer implements Player {
 //        int nextNextPlayer = otherPlayers[1];
         int nextPlay = playerViews[nextPlayer].firstPlayable;
         if (nextPlay != -1) {
-            System.out.println("nextPlayer: " + nextPlayer + ", nextPlay: "
-                    + nextPlay);
+            //System.out.println("nextPlayer: " + nextPlayer + ", nextPlay: "
+            //        + nextPlay);
             int card = Hand.getCard(state.getHand(nextPlayer), nextPlay);
             if (Tableau.isObsolete(state.getTableau(), card)) {
                 return true;
