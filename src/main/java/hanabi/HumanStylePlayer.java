@@ -147,7 +147,9 @@ public class HumanStylePlayer extends AbstractPlayer {
                 // simulate what this player will play
                 int position = Integer.numberOfTrailingZeros(playQueues[p]);
                 int card = Hand.getCard(hand, position);
-                futureTableau = Tableau.increment(futureTableau, Card.getColor(card));
+                if (Tableau.isPlayable(futureTableau, card)) {
+                    futureTableau = Tableau.increment(futureTableau, Card.getColor(card));
+                }
             }
         }
 
