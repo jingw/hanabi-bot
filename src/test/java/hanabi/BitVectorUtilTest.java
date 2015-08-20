@@ -11,4 +11,11 @@ public class BitVectorUtilTest {
         Assert.assertEquals(BitVectorUtil.deleteAndShift(0b1101, 1), 0b111);
         Assert.assertEquals(BitVectorUtil.deleteAndShift(0b1101, 2), 0b101);
     }
+
+    @Test
+    public void testLowestSetBits() {
+        Assert.assertEquals(BitVectorUtil.lowestSetBits(0b111, 10), 0b111);
+        Assert.assertEquals(BitVectorUtil.lowestSetBits(0, 10), 0);
+        Assert.assertEquals(BitVectorUtil.lowestSetBits(0b10001011, 3), 0b1011);
+    }
 }
