@@ -41,6 +41,8 @@ public final class GameState {
     private int tableau = Tableau.EMPTY;
     private boolean finished = false;
     private int turns = 0;
+    private int firstBadDiscard = -1;
+    private int cardsPlayedAtFirstBadDiscard = -1;
 
     /**
      * Create a fresh game with the given number of players.
@@ -180,6 +182,37 @@ public final class GameState {
         int card = Hand.getCard(hands[currentPlayer], pos);
         discard = CardMultiSet.increment(discard, card);
         removeCard(pos);
+        if (firstBadDiscard < 0 && overDiscards() > 0) {
+            firstBadDiscard = turns;
+            cardsPlayedAtFirstBadDiscard = getScore();
+        }
+    }
+
+    public int overDiscards(int index) {
+        int num_bad_discards = 0;
+        for (int color = 0; color < Card.NUM_COLORS - 1; color++) {
+            int card = Card.create(color, index);
+            int total = Card.NUM_COUNTS[index];
+            if (CardMultiSet.getCount(getDiscard(), card) >= total)
+                num_bad_discards++;
+        }
+        return num_bad_discards;
+    }
+
+    public int overDiscards() {
+        int num_bad_discards = 0;
+        for (int index = 0; index < Card.NUM_NUMBERS; index++) {
+            num_bad_discards += overDiscards(index);
+        }
+        return num_bad_discards;
+    }
+
+    public int getFirstBadDiscard() {
+        return firstBadDiscard;
+    }
+
+    public int getCardsPlayedAtFirstBadDiscard() {
+        return cardsPlayedAtFirstBadDiscard;
     }
 
     /**

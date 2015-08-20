@@ -10,6 +10,10 @@ public class StatisticsCollector {
     private Histogram discard_hist = new Histogram(31, "Bad discards");
     private Histogram discard_five_hist = new Histogram(31, "Bad discards of 5s");
     private Histogram lives_hist = new Histogram(31, "Remaining lives");
+    private Histogram first_discard_hist
+        = new Histogram(31, "Turn number of first bad discard / 5");
+    private Histogram first_discard_cards_played_hist
+        = new Histogram(31, "Cards played before first bad discard / 5");
 
     public Histogram getScoreHist() {
         return score_hist;
@@ -27,30 +31,19 @@ public class StatisticsCollector {
         return lives_hist;
     }
 
+    public Histogram getFirstBadDiscardHist() {
+        return first_discard_hist;
+    }
+
+    public Histogram getFirstBadDiscardCardsPlayedHist() {
+        return first_discard_cards_played_hist;
+    }
+
     public void run(Supplier<Player> playerFactory,
                          Function<Random, GameState> stateFactory,
                          int trials) {
         run(playerFactory, stateFactory, trials, x -> {
         });
-    }
-
-    public static int overdiscards(GameState state, int index) {
-        int num_bad_discards = 0;
-        for (int color = 0; color < Card.NUM_COLORS - 1; color++) {
-            int card = Card.create(color, index);
-            int total = Card.NUM_COUNTS[index];
-            if (CardMultiSet.getCount(state.getDiscard(), card) >= total)
-                num_bad_discards++;
-        }
-        return num_bad_discards;
-    }
-
-    public static int overdiscards(GameState state) {
-        int num_bad_discards = 0;
-        for (int index = 0; index < Card.NUM_NUMBERS; index++) {
-            num_bad_discards += overdiscards(state, index);
-        }
-        return num_bad_discards;
     }
 
     public void run(Supplier<Player> playerFactory,
@@ -69,9 +62,14 @@ public class StatisticsCollector {
             }
             int score = controller.getState().getScore();
             score_hist.increment(score);
-            discard_hist.increment(overdiscards(controller.getState()));
-            discard_five_hist.increment(overdiscards(controller.getState(), 4));
+            discard_hist.increment(controller.getState().overDiscards());
+            discard_five_hist.increment(controller.getState().overDiscards(4));
             lives_hist.increment(controller.getState().getLives());
+            if (controller.getState().getFirstBadDiscard() >= 0) {
+                first_discard_hist.increment(controller.getState().getFirstBadDiscard() / 5);
+                first_discard_cards_played_hist.increment(
+                    controller.getState().getCardsPlayedAtFirstBadDiscard() / 5);
+            }
             finishHook.accept(state);
         }
     }
