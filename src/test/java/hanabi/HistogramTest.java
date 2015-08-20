@@ -6,7 +6,7 @@ import org.junit.Test;
 public class HistogramTest {
     @Test
     public void test() {
-        Histogram hist = new Histogram(10);
+        Histogram hist = new Histogram(10, "Test histogram");
         hist.increment(0);
         hist.increment(1);
         hist.increment(2);
@@ -17,7 +17,7 @@ public class HistogramTest {
 
     @Test
     public void testStandardDeviation() {
-        Histogram hist = new Histogram(10);
+        Histogram hist = new Histogram(10, "Test histogram");
         hist.increment(0);
         hist.increment(1);
         hist.increment(3);
@@ -27,7 +27,7 @@ public class HistogramTest {
 
     @Test
     public void testPercentile() {
-        Histogram hist = new Histogram(10);
+        Histogram hist = new Histogram(10, "Test histogram");
         hist.increment(0);
         hist.increment(8);
         hist.increment(9);

@@ -14,7 +14,8 @@ public class PlayerFuzzTest {
         for (int nPlayers = 2; nPlayers <= 5; nPlayers++) {
             for (boolean rainbow : new boolean[]{true, false}) {
                 final int N = nPlayers;
-                Histogram hist = StatisticsCollector.run(
+                StatisticsCollector sc = new StatisticsCollector();
+                sc.run(
                         CheatingPlayer::new,
                         rnd -> new GameState(rainbow, N, rnd),
                         10_000,
@@ -26,6 +27,7 @@ public class PlayerFuzzTest {
                             Assert.assertEquals(state.getLives(), GameState.MAX_LIVES);
                         }
                 );
+                Histogram hist = sc.getScoreHist();
                 int maxScore = rainbow ? 30 : 25;
                 Assert.assertTrue(hist.mean() > maxScore - 1);
             }
@@ -37,7 +39,8 @@ public class PlayerFuzzTest {
         for (int nPlayers = 2; nPlayers <= 5; nPlayers++) {
             for (boolean rainbow : new boolean[]{true, false}) {
                 final int N = nPlayers;
-                Histogram hist = StatisticsCollector.run(
+                StatisticsCollector sc = new StatisticsCollector();
+                sc.run(
                         DumbPlayer::new,
                         rnd -> new GameState(rainbow, N, rnd),
                         10_000,
@@ -49,6 +52,7 @@ public class PlayerFuzzTest {
                             Assert.assertEquals(state.getLives(), 0);
                         }
                 );
+                Histogram hist = sc.getScoreHist();
                 Assert.assertTrue(hist.mean() < 10);
             }
         }
@@ -59,7 +63,8 @@ public class PlayerFuzzTest {
         for (int nPlayers = 2; nPlayers <= 5; nPlayers++) {
             for (boolean rainbow : new boolean[]{true, false}) {
                 final int N = nPlayers;
-                StatisticsCollector.run(
+                StatisticsCollector sc = new StatisticsCollector();
+                sc.run(
                         SmartPlayer::new,
                         rnd -> new GameState(rainbow, N, rnd),
                         10_000
@@ -73,7 +78,8 @@ public class PlayerFuzzTest {
         for (int nPlayers = 2; nPlayers <= 5; nPlayers++) {
             for (boolean rainbow : new boolean[]{true, false}) {
                 final int N = nPlayers;
-                StatisticsCollector.run(
+                StatisticsCollector sc = new StatisticsCollector();
+                sc.run(
                         HumanStylePlayer::new,
                         rnd -> new GameState(rainbow, N, rnd),
                         10_000
