@@ -5,6 +5,10 @@ package hanabi;
  */
 public class HumanStylePlayer extends AbstractPlayer {
     private static final int MAX_TURNS_LEFT_FOR_GAMBLE_PLAY = 4;
+    /**
+     * Gambling requires disabling some useful asserts, so allow turning it off
+     */
+    private static final boolean ENABLE_GAMBLING = false;
 
     /**
      * Return how many cards a hint represents.
@@ -46,7 +50,7 @@ public class HumanStylePlayer extends AbstractPlayer {
 
         // if the game is going to end anyways, and I have no useful hint to give, play a card and
         // hope for the best.
-        if (state.getTurnsLeft() <= MAX_TURNS_LEFT_FOR_GAMBLE_PLAY) {
+        if (state.getTurnsLeft() <= MAX_TURNS_LEFT_FOR_GAMBLE_PLAY && ENABLE_GAMBLING) {
             return Move.play(0);
         }
 
@@ -149,6 +153,10 @@ public class HumanStylePlayer extends AbstractPlayer {
                 int card = Hand.getCard(hand, position);
                 if (Tableau.isPlayable(futureTableau, card)) {
                     futureTableau = Tableau.increment(futureTableau, Card.getColor(card));
+                } else {
+                    if (!ENABLE_GAMBLING) {
+                        throw new AssertionError();
+                    }
                 }
             }
         }
@@ -177,6 +185,14 @@ public class HumanStylePlayer extends AbstractPlayer {
 
     @Override
     public void notifyPlay(int card, int position, int sourcePlayer) {
+        if (!ENABLE_GAMBLING) {
+            // this algorithm should never blow up
+            if (state.getLives() != GameState.MAX_LIVES) {
+                throw new AssertionError();
+            }
+            if ((playQueues[sourcePlayer] & (1 << position)) == 0)
+                throw new AssertionError();
+        }
         // remove from queue
         playQueues[sourcePlayer] = BitVectorUtil.deleteAndShift(playQueues[sourcePlayer], position);
     }
