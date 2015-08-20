@@ -66,7 +66,7 @@ public class GameStateTest {
         int hints = 1;
         int lives = 1;
         int[] hands = {Hand.create(Card.create(0, 0))};
-        GameState state = new GameState(deck, hints, lives, hands, 0, -1, 0, Tableau.EMPTY);
+        GameState state = new GameState(false, deck, hints, lives, hands, 0, -1, 0, Tableau.EMPTY);
         state.applyMove(Move.discard(0));
         Assert.assertEquals(1, state.getDeckSize());
         Assert.assertEquals(hints + 1, state.getHints());
@@ -86,7 +86,7 @@ public class GameStateTest {
         int[] deck = {TOP_OF_DECK};
         int hints = 1;
         int[] hands = {Hand.create(Card.create(0, 0))};
-        GameState state = new GameState(deck, hints, 1, hands, 0, -1, 0, Tableau.EMPTY);
+        GameState state = new GameState(false, deck, hints, 1, hands, 0, -1, 0, Tableau.EMPTY);
         state.applyMove(Move.discard(0));
         Assert.assertEquals(0, state.getDeckSize());
         Assert.assertEquals(hints + 1, state.getHints());
@@ -107,7 +107,7 @@ public class GameStateTest {
         int[] hands = {Hand.create(Card.create(0, 0)), Hand.create(Card.create(0, 0))};
         int currentPlayer = 1;
         int endingPlayer = 0;
-        GameState state = new GameState(deck, hints, 1, hands, currentPlayer, endingPlayer, 0, Tableau.EMPTY);
+        GameState state = new GameState(false, deck, hints, 1, hands, currentPlayer, endingPlayer, 0, Tableau.EMPTY);
         state.applyMove(Move.discard(0));
         Assert.assertEquals(0, state.getDeckSize());
         Assert.assertEquals(hints + 1, state.getHints());
@@ -129,7 +129,7 @@ public class GameStateTest {
         int[] hands = {Hand.create(Card.create(0, 0)), Hand.create(Card.create(0, 0))};
         int currentPlayer = 0;
         int endingPlayer = 0;
-        GameState state = new GameState(deck, hints, 1, hands, currentPlayer, endingPlayer, 0, Tableau.EMPTY);
+        GameState state = new GameState(false, deck, hints, 1, hands, currentPlayer, endingPlayer, 0, Tableau.EMPTY);
         state.applyMove(Move.discard(0));
         Assert.assertEquals(0, state.getDeckSize());
         Assert.assertEquals(hints + 1, state.getHints());
@@ -150,7 +150,7 @@ public class GameStateTest {
         int[] hands = {Hand.create(Card.create(0, 0)), Hand.create(Card.create(0, 0))};
         int currentPlayer = 0;
         int endingPlayer = 0;
-        GameState state = new GameState(deck, hints, 1, hands, currentPlayer, endingPlayer, 0, Tableau.EMPTY);
+        GameState state = new GameState(false, deck, hints, 1, hands, currentPlayer, endingPlayer, 0, Tableau.EMPTY);
         state.applyMove(Move.hintColor(1, 0));
         Assert.assertEquals(0, state.getDeckSize());
         Assert.assertEquals(hints - 1, state.getHints());
@@ -168,7 +168,7 @@ public class GameStateTest {
         int hints = 1;
         int lives = 1;
         int[] hands = {Hand.create(OLD_HAND_CARD, handCard)};
-        GameState state = new GameState(deck, hints, lives, hands, 0, -1, 0, tableau);
+        GameState state = new GameState(false, deck, hints, lives, hands, 0, -1, 0, tableau);
         state.applyMove(Move.play(0));
         Assert.assertEquals(1, state.getDeckSize());
         Assert.assertEquals(2, Hand.getSize(state.getHand(0)));
@@ -208,7 +208,7 @@ public class GameStateTest {
         int[] deck = {Card.create(1, 0), TOP_OF_DECK};
         int hints = 1;
         int[] hands = {Hand.create(OLD_HAND_CARD, Card.create(0, 1))};
-        GameState state = new GameState(deck, hints, lives, hands, 0, -1, 0, Tableau.EMPTY);
+        GameState state = new GameState(false, deck, hints, lives, hands, 0, -1, 0, Tableau.EMPTY);
         state.applyMove(Move.play(0));
         Assert.assertEquals(1, state.getDeckSize());
         Assert.assertEquals(hints, state.getHints());

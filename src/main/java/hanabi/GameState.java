@@ -43,11 +43,13 @@ public final class GameState {
     private int turns = 0;
     private int firstBadDiscard = -1;
     private int cardsPlayedAtFirstBadDiscard = -1;
+    private boolean rainbow;
 
     /**
      * Create a fresh game with the given number of players.
      */
     public GameState(boolean rainbow, int players, Random random) {
+        this.rainbow = rainbow;
         deck = Card.makeDeck(rainbow);
         RandomUtil.shuffle(deck, random);
         deckIndex = deck.length - 1;
@@ -70,8 +72,9 @@ public final class GameState {
     /**
      * Create a game from a custom starting point
      */
-    public GameState(int[] deck, int hints, int lives, int[] hands, int currentPlayer, int endingPlayer, long discard, int tableau) {
+    public GameState(boolean rainbow, int[] deck, int hints, int lives, int[] hands, int currentPlayer, int endingPlayer, long discard, int tableau) {
         // TODO validation
+        this.rainbow = rainbow;
         this.deck = deck;
         this.deckIndex = deck.length - 1;
         this.hints = hints;
@@ -349,5 +352,9 @@ public final class GameState {
         } else {
             return (endingPlayer - currentPlayer + hands.length) % hands.length + 1;
         }
+    }
+
+    public boolean isRainbow() {
+        return rainbow;
     }
 }

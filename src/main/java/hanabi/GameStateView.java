@@ -44,8 +44,12 @@ public class GameStateView {
         return state.getHand(player);
     }
 
+    public int getHandSize(int player) {
+        return Hand.getSize(state.getHand(player));
+    }
+
     public int getMyHandSize() {
-        return Hand.getSize(state.getHand(viewingPlayer));
+        return getHandSize(viewingPlayer);
     }
 
     public int getTableau() {
@@ -62,5 +66,9 @@ public class GameStateView {
 
     public int getTurnsLeft() {
         return state.getTurnsLeft();
+    }
+
+    public boolean isRainbow() {
+        return state.isRainbow();
     }
 }

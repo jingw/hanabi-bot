@@ -31,11 +31,13 @@ public class HumanStylePlayer extends AbstractPlayer {
     }
 
     private int[] playQueues;
+    private CardCounter counter;
 
     @Override
     public void notifyGameStarted(GameStateView state, int position) {
         super.notifyGameStarted(state, position);
         playQueues = new int[state.getNumPlayers()];
+        counter = new CardCounter(state);
     }
 
     @Override
@@ -286,6 +288,7 @@ public class HumanStylePlayer extends AbstractPlayer {
 
     @Override
     public void notifyHintColor(int targetPlayer, int sourcePlayer, int color, int which) {
+        counter.notifyHintColor(targetPlayer, sourcePlayer, color, which);
         if (playQueues[sourcePlayer] != 0)
             throw new AssertionError();
         // assume a hint is a command to play everything
@@ -300,6 +303,7 @@ public class HumanStylePlayer extends AbstractPlayer {
 
     @Override
     public void notifyHintNumber(int targetPlayer, int sourcePlayer, int number, int which) {
+        counter.notifyHintNumber(targetPlayer, sourcePlayer, number, which);
         if (playQueues[sourcePlayer] != 0)
             throw new AssertionError();
         // assume a hint is a command to play everything
@@ -402,6 +406,7 @@ public class HumanStylePlayer extends AbstractPlayer {
 
     @Override
     public void notifyPlay(int card, int position, int sourcePlayer) {
+        counter.notifyPlay(card, position, sourcePlayer);
         if (!ENABLE_GAMBLING) {
             // this algorithm should never blow up
             if (state.getLives() != GameState.MAX_LIVES) {
@@ -420,12 +425,14 @@ public class HumanStylePlayer extends AbstractPlayer {
 
     @Override
     public void notifyDiscard(int card, int position, int sourcePlayer) {
+        counter.notifyDiscard(card, position, sourcePlayer);
         if (playQueues[sourcePlayer] != 0)
             throw new AssertionError();
     }
 
     @Override
     public void notifyDraw(int card, int sourcePlayer) {
+        counter.notifyDraw(card, sourcePlayer);
         playQueues[sourcePlayer] <<= 1;
     }
 }
