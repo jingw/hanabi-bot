@@ -38,6 +38,7 @@ public class Main {
         );
         collector.getDiscardHist().dump(1.96, System.out);
         collector.getDiscardFiveHist().dump(1.96, System.out);
+        collector.getLivesHist().dump(1.96, System.out);
         collector.getScoreHist().dump(1.96, System.out);
     }
 }

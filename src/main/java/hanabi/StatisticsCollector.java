@@ -9,6 +9,7 @@ public class StatisticsCollector {
     private Histogram score_hist = new Histogram(31, "Scores");
     private Histogram discard_hist = new Histogram(31, "Bad discards");
     private Histogram discard_five_hist = new Histogram(31, "Bad discards of 5s");
+    private Histogram lives_hist = new Histogram(31, "Remaining lives");
 
     public Histogram getScoreHist() {
         return score_hist;
@@ -20,6 +21,10 @@ public class StatisticsCollector {
 
     public Histogram getDiscardFiveHist() {
         return discard_five_hist;
+    }
+
+    public Histogram getLivesHist() {
+        return lives_hist;
     }
 
     public void run(Supplier<Player> playerFactory,
@@ -66,6 +71,7 @@ public class StatisticsCollector {
             score_hist.increment(score);
             discard_hist.increment(overdiscards(controller.getState()));
             discard_five_hist.increment(overdiscards(controller.getState(), 4));
+            lives_hist.increment(controller.getState().getLives());
             finishHook.accept(state);
         }
     }

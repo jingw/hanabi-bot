@@ -8,11 +8,11 @@ import java.io.PrintStream;
 public class Histogram {
     private int[] counts;
     private int n;
-    private String histName;
+    private String name;
 
     public Histogram(int buckets, String name) {
         counts = new int[buckets];
-        histName = name;
+        this.name = name;
     }
 
     public void increment(int bucket) {
@@ -42,7 +42,7 @@ public class Histogram {
     }
 
     public void dump(double z, PrintStream out) {
-        out.printf("%s:\n", histName);
+        out.printf("%s:\n", name);
         for (int i = 0; i < counts.length; i++) {
             if (counts[i] > 0) {
                 double p = proportion(i);
