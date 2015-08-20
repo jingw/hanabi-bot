@@ -19,6 +19,9 @@ public class Histogram {
     }
 
     public double mean() {
+        if (n < 1) {
+            throw new IllegalStateException("Not enough samples");
+        }
         double sum = 0;
         for (int i = 0; i < counts.length; i++) {
             sum += i * counts[i];
@@ -45,6 +48,7 @@ public class Histogram {
             }
         }
         out.printf("mean: %.3f +- %.3f%n", mean(), standardError() * z);
+        out.printf("median: %d%n", percentile(0.5));
     }
 
     public double standardError() {
@@ -52,11 +56,28 @@ public class Histogram {
     }
 
     public double standardDeviation() {
+        if (n < 2) {
+            throw new IllegalStateException("Not enough samples");
+        }
         double mean = mean();
         double ssr = 0;
         for (int i = 0; i < counts.length; i++) {
             ssr += (i - mean) * (i - mean) * counts[i];
         }
         return Math.sqrt(ssr / (n - 1));
+    }
+
+    public int percentile(double p) {
+        if (p < 0 || p > 1) {
+            throw new IllegalArgumentException("p out of range");
+        }
+        int runningTotal = 0;
+        for (int i = 0; i < counts.length; i++) {
+            runningTotal += counts[i];
+            if ((double) runningTotal / n >= p) {
+                return i;
+            }
+        }
+        throw new AssertionError(); // maybe this is reachable with floating point inaccuracies?
     }
 }
