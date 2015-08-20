@@ -6,8 +6,15 @@ package hanabi;
 public class HumanStylePlayer extends AbstractPlayer {
     private static final int MAX_TURNS_LEFT_FOR_GAMBLE_PLAY = 4;
 
-    private int maxCardsPerHint() {
-        if (state.getScore() < 10) {
+    /**
+     * Return how many cards a hint represents.
+     * Idea: Early in the game, multi-card hints are likely to be useful. Later in the game, they're
+     * likely to be noise.
+     */
+    private int maxCardsPerHint(int type) {
+        // 0 = color, 1 = number
+        int threshold = type == 0 ? 15 : 6;
+        if (state.getScore() < threshold) {
             return 2;
         } else {
             return 1;
@@ -118,7 +125,7 @@ public class HumanStylePlayer extends AbstractPlayer {
                                     minNumber = number;
                                 }
                             }
-                            if (count >= maxCardsPerHint()) {
+                            if (count >= maxCardsPerHint(type)) {
                                 break;
                             }
                         }
@@ -150,7 +157,7 @@ public class HumanStylePlayer extends AbstractPlayer {
     @Override
     public void notifyHintColor(int targetPlayer, int sourcePlayer, int color, int which) {
         // assume a hint is a command to play everything
-        playQueues[targetPlayer] = BitVectorUtil.lowestSetBits(which, maxCardsPerHint());
+        playQueues[targetPlayer] = BitVectorUtil.lowestSetBits(which, maxCardsPerHint(0));
         if (which == 0) {
             throw new AssertionError();
         }
@@ -160,7 +167,7 @@ public class HumanStylePlayer extends AbstractPlayer {
     public void notifyHintNumber(int targetPlayer, int sourcePlayer, int number, int which) {
         // assume a hint is a command to play everything
         // TODO if card is obviously not playable, interpret as a don't discard hint
-        playQueues[targetPlayer] = BitVectorUtil.lowestSetBits(which, maxCardsPerHint());
+        playQueues[targetPlayer] = BitVectorUtil.lowestSetBits(which, maxCardsPerHint(1));
         if (which == 0) {
             throw new AssertionError();
         }
