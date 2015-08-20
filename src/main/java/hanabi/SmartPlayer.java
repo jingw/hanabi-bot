@@ -154,7 +154,7 @@ public class SmartPlayer implements Player {
 
     private boolean isNextPlayObsolete() {
         int nextPlayer = getNextPlayer();
-        int nextNextPlayer = otherPlayers[1];
+//        int nextNextPlayer = otherPlayers[1];
         int nextPlay = playerViews[nextPlayer].firstPlayable;
         if (nextPlay != -1) {
             System.out.println("nextPlayer: " + nextPlayer + ", nextPlay: "
