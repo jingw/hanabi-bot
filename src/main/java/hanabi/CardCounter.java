@@ -220,4 +220,33 @@ public class CardCounter {
             }
         }
     }
+
+    /**
+     * Of the possibilities, count how many are obsolete
+     */
+    public int countObsolete(int player, int index) {
+        int set = possible[player][index];
+        if (set == 0) {
+            throw new IllegalArgumentException("no card there");
+        }
+        int count = 0;
+        for (int c = 0; c < Card.NUM_COLORS; c++) {
+            for (int n = 0; n < Card.NUM_NUMBERS; n++) {
+                if ((set & cardMask(c, n)) != 0) {
+                    if (Tableau.isObsolete(state.getTableau(), Card.create(c, n))) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    public int numPossiblities(int player, int index) {
+        int set = possible[player][index];
+        if (set == 0) {
+            throw new IllegalArgumentException("no card there");
+        }
+        return Integer.bitCount(set);
+    }
 }

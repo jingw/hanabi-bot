@@ -68,11 +68,21 @@ public class HumanStylePlayer extends AbstractPlayer {
             return Move.play(0);
         }
 
-        // discard second oldest card
-        // with 4 player no rainbow:
-        // oldest: 19.935 +- 0.014
-        // 2nd oldest: 20.099 +- 0.014
-        return Move.discard(state.getMyHandSize() - WHICH_TO_DISCARD);
+        // discard the card with the highest chance of being obsolete
+        double bestChance = 0;
+        int bestIndex = -1;
+        int size = state.getMyHandSize();
+        for (int i = 0; i < size; i++) {
+            int obsolete = counter.countObsolete(me, i);
+            int total = counter.numPossiblities(me, i);
+            double ratio = (double)obsolete / total;
+            if (ratio >= bestChance) {
+                bestChance = ratio;
+                bestIndex = i;
+            }
+        }
+
+        return Move.discard(bestIndex);
     }
 
     /**
