@@ -3,8 +3,6 @@ package hanabi;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Random;
-
 /**
  * Fuzz test all player implementations by running a ton of trials.
  */

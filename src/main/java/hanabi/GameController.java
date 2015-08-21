@@ -1,5 +1,6 @@
 package hanabi;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -10,6 +11,7 @@ public class GameController {
     private GameState state;
     private Player[] players;
     private boolean log;
+    private Consumer<Integer> turnHook;
 
     private static Player[] makePlayers(int n, Supplier<Player> playerFactory) {
         Player[] players = new Player[n];
@@ -30,6 +32,10 @@ public class GameController {
         this.state = state;
         this.players = players;
         this.log = log;
+    }
+
+    public void setTurnHook(Consumer<Integer> turnHook) {
+        this.turnHook = turnHook;
     }
 
     public void run() {
@@ -113,6 +119,8 @@ public class GameController {
                 default:
                     throw new AssertionError();
             }
+            if (turnHook != null)
+                turnHook.accept(move);
         }
     }
 
