@@ -10,18 +10,34 @@ public class SmartPlayer extends AbstractPlayer {
     private PlayerView[] playerViews;
     private int fives = 0;
     private CardCounter counter;
-
+    private static int[] salt = {1,2,3,4,0};
+    private static int[] unsalt = new int[5];
+    static {
+        for(int i = 0; i < 5; ++i) {
+            unsalt[salt[i]] = i;
+        }
+    }
+    private boolean fancy = false;
     @Override
     public void notifyGameStarted(GameStateView stateView, int position) {
         super.notifyGameStarted(stateView, position);
         counter = new CardCounter(state);
         int numPlayers = state.getNumPlayers();
         otherPlayers = new int[numPlayers - 1];
-        int pos = 0;
-        for (int i = (this.me + 1) % numPlayers; i != this.me; i =
-                (i + 1) % numPlayers) {
-            otherPlayers[pos] = i;
-            ++pos;
+        if (false) {
+            int pos = numPlayers - 2;
+            for (int i = (this.me + 1) % numPlayers; i != this.me; i =
+                    (i + 1) % numPlayers) {
+                otherPlayers[pos] = i;
+                --pos;
+            }
+        } else {
+            int pos = 0;
+            for (int i = (this.me + 1) % numPlayers; i != this.me; i =
+                    (i + 1) % numPlayers) {
+                otherPlayers[pos] = i;
+                ++pos;
+            }
         }
 
         playerViews = new PlayerView[numPlayers];
@@ -29,7 +45,7 @@ public class SmartPlayer extends AbstractPlayer {
             playerViews[i] = new PlayerView();
         }
         this.firstDiscardable = -1;
-        this.firstPlayable = -1;
+        this.firstPlayable = -1;        
     }
 
     /**
@@ -66,13 +82,11 @@ public class SmartPlayer extends AbstractPlayer {
         int play = -1;
         if (firstPlayable != -1) {
             play = Move.play(firstPlayable);
-            firstPlayable = -1;
         }
 
         int goodDiscard = -1;
         if (firstDiscardable != -1) {
             goodDiscard = Move.discard(firstDiscardable);
-            firstDiscardable = -1;
         }
         
         int cardsLeft = state.getDeckSize();
@@ -95,7 +109,7 @@ public class SmartPlayer extends AbstractPlayer {
         if (someFive != -1) {
             yolo = Move.play(someFive);
         }
-                
+
         int playableOnTable = 0;
         for (int player: otherPlayers) {
             if (playerViews[player].firstPlayable != -1) {
@@ -166,6 +180,8 @@ public class SmartPlayer extends AbstractPlayer {
         int playHintPower = getPlayHintPower();
         int discardHintPower = getDiscardHintPower();
         if (hints > 0) {
+            log("playHint = " + playHint);
+            log("playHintPower = " + playHintPower);
             if (playHint != -1 && playHintPower > 0) {
                 return playHint;
             }
@@ -178,7 +194,6 @@ public class SmartPlayer extends AbstractPlayer {
             return play;
         }
 
-        
         if (goodDiscard != -1) {
             return goodDiscard;
         }
@@ -190,13 +205,11 @@ public class SmartPlayer extends AbstractPlayer {
         int play = -1;
         if (firstPlayable != -1) {
             play = Move.play(firstPlayable);
-            firstPlayable = -1;
         }
 
         int goodDiscard = -1;
         if (firstDiscardable != -1) {
             goodDiscard = Move.discard(firstDiscardable);
-            firstDiscardable = -1;
         }
 
         // if anyone has a playable card, and the deck is thin, hint to buy time
@@ -391,9 +404,10 @@ public class SmartPlayer extends AbstractPlayer {
     }
 
     private int makePlayHint() {
-        int value = (me + sumOfFirstPlayable(otherPlayers)) % 5;
+        int value = (sumOfFirstPlayable(otherPlayers)) % 5;
         if (value < 0)
             value += 5;
+        value = salt[value];
 
         for (int player : otherPlayers) {
             int hand = state.getHand(player);
@@ -409,7 +423,8 @@ public class SmartPlayer extends AbstractPlayer {
     }
 
     private void inferFirstPlayable(int hinter, int value) {
-        int part = hinter;
+        value = unsalt[value];
+        int part = 0;
         for (int player : otherPlayers) {
             if (player == hinter) {
                 continue;
@@ -418,6 +433,8 @@ public class SmartPlayer extends AbstractPlayer {
             playerViews[player].firstPlayable = index;
             part += index;
         }
+        
+
 
         if (hinter == me) {
             return;
@@ -493,6 +510,14 @@ public class SmartPlayer extends AbstractPlayer {
         int ansPriority = 0;
         for (int i = 0; i < size; i++) {
             int card = Hand.getCard(hand, i);
+            int next = (player + 1) % state.getNumPlayers();
+            int prevCard = -1;
+            if (next != me && playerViews[next].firstPlayable != -1) {
+                prevCard = Hand.getCard(state.getHand(next), playerViews[next].firstPlayable);
+            }
+            if (card == prevCard && fancy) {
+                continue;
+            }
             if (Tableau.isPlayable(tableau, card)) {
                 int rank = Card.getNumber(card);
                 int priority = rankPriority(rank);
@@ -532,6 +557,28 @@ public class SmartPlayer extends AbstractPlayer {
         counter.notifyPlay(card, position, player);
         if (player == this.me) {
             fives = BitVectorUtil.deleteAndShift(fives, position);
+            firstPlayable = -1;
+        }
+        int size = state.getDeckSize();
+        if (state.getEndingPlayer() != -1 || state.getEndingPlayer() == player) {
+            size += 1;
+        }
+        if (player != this.me && size > 1 && playerViews[player].firstPlayable != position) {
+            if (fancy) {
+                int difference = position - playerViews[player].firstPlayable;
+                firstPlayable -= difference;
+                if (firstPlayable < -1) {
+                    firstPlayable += 5;
+                }
+                if (firstPlayable >= 4) {
+                    firstPlayable -= 5;
+                }
+            }
+            
+            log("expected " + playerViews[player].firstPlayable);
+//            throw new RuntimeException();
+            System.out.println("WTF");
+//            throw new RuntimeException();
         }
         // System.out.println("resetting playable");
         playerViews[player].firstPlayable = -1;
@@ -545,10 +592,11 @@ public class SmartPlayer extends AbstractPlayer {
         counter.notifyDiscard(card, position, player);
         if (player == this.me) {
             fives = BitVectorUtil.deleteAndShift(fives, position);
+            firstDiscardable = -1;
         }
 
         playerViews[player].firstDiscardable = -1;
-        if (playerViews[player].firstPlayable != -1) {
+        if (playerViews[player].firstPlayable != -1 && playerViews[player].firstPlayable > position) {
             playerViews[player].firstPlayable -= 1;
         }
     }

@@ -71,4 +71,9 @@ public class GameStateView {
     public boolean isRainbow() {
         return state.isRainbow();
     }
+    
+    public int getEndingPlayer() {
+        return state.getEndingPlayer();
+    }
+
 }
