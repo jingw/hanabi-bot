@@ -18,7 +18,7 @@ public class HumanStylePlayer extends AbstractPlayer {
      */
     private int maxCardsPerHint(int type) {
         // 0 = color, 1 = number
-        int threshold = type == 0 ? 15 : 1;
+        int threshold = type == 0 ? 15 : 2;
         if (state.getScore() < threshold) {
             return 2;
         } else {
@@ -75,14 +75,15 @@ public class HumanStylePlayer extends AbstractPlayer {
         }
 
         // discard the card with the highest chance of being obsolete
-        double bestChance = 0;
+        double bestChance = -1;
         int bestIndex = -1;
         int size = state.getMyHandSize();
         for (int i = 0; i < size; i++) {
             int obsolete = counter.countObsolete(me, i);
             int total = counter.numPossiblities(me, i);
             double ratio = (double) obsolete / total;
-            if (ratio >= bestChance) {
+            // using > gave better performance than >=
+            if (ratio > bestChance) {
                 bestChance = ratio;
                 bestIndex = i;
             }
@@ -91,7 +92,7 @@ public class HumanStylePlayer extends AbstractPlayer {
         if (bestChance > 0.9)
             return Move.discard(bestIndex);
 
-        if (state.getHints() > 3) {
+        if (state.getHints() > 4) {
             int junk = lookForJunkHint();
             if (junk != Move.NULL) {
                 log("Making a junk hint");
