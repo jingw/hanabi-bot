@@ -4,10 +4,6 @@ package hanabi;
  * Plays Hanabi like humans do.
  */
 public class HumanStylePlayer extends AbstractPlayer {
-    /**
-     * Index from end, where 1 = oldest card
-     */
-    private static final int WHICH_TO_DISCARD = 2;
     private static final int MAX_TURNS_LEFT_FOR_GAMBLE_PLAY = 4;
     /**
      * Gambling requires disabling some useful asserts, so allow turning it off
@@ -22,7 +18,7 @@ public class HumanStylePlayer extends AbstractPlayer {
      */
     private int maxCardsPerHint(int type) {
         // 0 = color, 1 = number
-        int threshold = type == 0 ? 15 : 6;
+        int threshold = type == 0 ? 15 : 1;
         if (state.getScore() < threshold) {
             return 2;
         } else {
