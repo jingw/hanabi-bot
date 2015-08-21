@@ -242,6 +242,32 @@ public class CardCounter {
         return count;
     }
 
+    /**
+     * Return the number of possiblities that would eliminate all of a card if discarded.
+     */
+    public int countBadDiscards(int player, int index) {
+        int set = possible[player][index];
+        if (set == 0) {
+            throw new IllegalArgumentException("no card there");
+        }
+        long discard = state.getDiscard();
+        int count = 0;
+        for (int c = 0; c < Card.NUM_COLORS; c++) {
+            for (int n = 0; n < Card.NUM_NUMBERS; n++) {
+                if ((set & cardMask(c, n)) != 0) {
+                    int nDiscard = CardMultiSet.getCount(discard, Card.create(c, n)) + 1;
+                    if (nDiscard > Card.NUM_COUNTS[n]) {
+                        throw new AssertionError("Would have too many: " + nDiscard);
+                    }
+                    if (nDiscard == Card.NUM_COUNTS[n]) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
     public int numPossiblities(int player, int index) {
         int set = possible[player][index];
         if (set == 0) {

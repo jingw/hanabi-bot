@@ -8,12 +8,13 @@ public class SmartPlayer extends AbstractPlayer {
     private int firstDiscardable;
     private int[] otherPlayers;
     private PlayerView[] playerViews;
-    private int safeToDiscard = 0;
     private int fives = 0;
+    private CardCounter counter;
 
     @Override
     public void notifyGameStarted(GameStateView stateView, int position) {
         super.notifyGameStarted(stateView, position);
+        counter = new CardCounter(state);
         int numPlayers = state.getNumPlayers();
         otherPlayers = new int[numPlayers - 1];
         int pos = 0;
@@ -80,8 +81,7 @@ public class SmartPlayer extends AbstractPlayer {
         int playHint = makePlayHint();
         int discardHint = makeDiscardHint();
         int safeDiscard = makeSafeDiscard();
-        int randomDiscard = makeRandomDiscard();
-        
+
         int numfives = 0;
         int someFive = -1;
         for(int i = 0; i < state.getMyHandSize(); ++i) {
@@ -182,11 +182,8 @@ public class SmartPlayer extends AbstractPlayer {
         if (goodDiscard != -1) {
             return goodDiscard;
         }
-        if (safeDiscard != -1)  {
-            return safeDiscard;
-        }
-        return randomDiscard;
-        
+        return safeDiscard;
+
     }
     
     private int getMoveNormal() {
@@ -207,7 +204,6 @@ public class SmartPlayer extends AbstractPlayer {
         int playHint = makePlayHint();
         int discardHint = makeDiscardHint();
         int safeDiscard = makeSafeDiscard();
-        int randomDiscard = makeRandomDiscard();
 
         // System.out.println("discardHint: " + discardHint);
         // if can prevent life loss, do it.
@@ -250,13 +246,8 @@ public class SmartPlayer extends AbstractPlayer {
             }
         }
 
-        if (safeDiscard != -1) {
-            log("Safe discard.");
-            return safeDiscard;
-        }
-        
-        log("Random discard.");
-        return randomDiscard;    
+        log("Safe discard.");
+        return safeDiscard;
     }
 
     private int getPlayHintPower() {
@@ -332,21 +323,30 @@ public class SmartPlayer extends AbstractPlayer {
         }
         return Move.discard(0);
     }
-    
-    private int makeSafeDiscard() {
-//        return makeCheatingDiscard();
-        for (int i = 0; i < state.getMyHandSize(); ++i) {
-            if ((safeToDiscard & (1 << i)) != 0) {
-                return Move.discard(i);
-            }
-        }
-        return -1;
-    }
-    
-    private int makeRandomDiscard() {
-        return Move.discard(0);
+
+    private double safeDiscardScore(int i) {
+        int bad = counter.countBadDiscards(me, i);
+        int total = counter.numPossiblities(me, i);
+        return (double) -bad / total;
     }
 
+    private int makeSafeDiscard() {
+        // discard the card with the highest chance of being obsolete
+        double bestScore = Double.NEGATIVE_INFINITY;
+        int bestIndex = -1;
+        int size = state.getMyHandSize();
+        for (int i = 0; i < size; i++) {
+            double score = safeDiscardScore(i);
+            // using > gave better performance than >=
+            if (score > bestScore) {
+                bestScore = score;
+                bestIndex = i;
+            }
+        }
+
+        return Move.discard(bestIndex);
+    }
+    
     private int makeDiscardHint() {
         int value = sumOfFirstDiscardable(otherPlayers) % 5;
         if (value < 0)
@@ -508,6 +508,7 @@ public class SmartPlayer extends AbstractPlayer {
     @Override
     public void notifyHintColor(int targetPlayer, int sourcePlayer, int color,
             int which) {
+        counter.notifyHintColor(targetPlayer, sourcePlayer, color, which);
         // all players other than source now know their first discardable
         inferFirstDiscardable(sourcePlayer, color);
     }
@@ -515,26 +516,22 @@ public class SmartPlayer extends AbstractPlayer {
     @Override
     public void notifyHintNumber(int targetPlayer, int sourcePlayer,
             int number, int which) {
+        counter.notifyHintNumber(targetPlayer, sourcePlayer, number, which);
         // all players other than source now know their first playable
         inferFirstPlayable(sourcePlayer, number);
         if (targetPlayer == me) {
             if (number == 4) {
-                int size = state.getMyHandSize();
                 fives = which;
                 log("which = " + which);
-                safeToDiscard = ((1 << size) - 1) ^ which;
-                log("safeToDiscard = " + safeToDiscard);
-            } else {
-                safeToDiscard |= which;
             }
         }
     }
 
     @Override
     public void notifyPlay(int card, int position, int player) {
+        counter.notifyPlay(card, position, player);
         if (player == this.me) {
-            safeToDiscard = BitVectorUtil.deleteAndShift(safeToDiscard, position);
-            fives = BitVectorUtil.deleteAndShift(fives, position);            
+            fives = BitVectorUtil.deleteAndShift(fives, position);
         }
         // System.out.println("resetting playable");
         playerViews[player].firstPlayable = -1;
@@ -545,9 +542,9 @@ public class SmartPlayer extends AbstractPlayer {
 
     @Override
     public void notifyDiscard(int card, int position, int player) {
+        counter.notifyDiscard(card, position, player);
         if (player == this.me) {
-            safeToDiscard = BitVectorUtil.deleteAndShift(safeToDiscard, position);   
-            fives = BitVectorUtil.deleteAndShift(fives, position);            
+            fives = BitVectorUtil.deleteAndShift(fives, position);
         }
 
         playerViews[player].firstDiscardable = -1;
@@ -558,8 +555,8 @@ public class SmartPlayer extends AbstractPlayer {
 
     @Override
     public void notifyDraw(int card, int player) {
+        counter.notifyDraw(card, player);
         if (player == this.me) {
-            safeToDiscard = safeToDiscard << 1;
             fives = fives << 1;
         }
 
