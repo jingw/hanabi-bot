@@ -66,6 +66,14 @@ public class HumanStylePlayer extends AbstractPlayer {
             return Move.play(0);
         }
 
+        if (state.getDeckSize() < 2 && state.getHints() > 0) {
+            int junk = lookForJunkHint();
+            if (junk != Move.NULL) {
+                log("Making a junk hint");
+                return junk;
+            }
+        }
+
         // discard the card with the highest chance of being obsolete
         double bestChance = 0;
         int bestIndex = -1;
@@ -73,10 +81,21 @@ public class HumanStylePlayer extends AbstractPlayer {
         for (int i = 0; i < size; i++) {
             int obsolete = counter.countObsolete(me, i);
             int total = counter.numPossiblities(me, i);
-            double ratio = (double)obsolete / total;
+            double ratio = (double) obsolete / total;
             if (ratio >= bestChance) {
                 bestChance = ratio;
                 bestIndex = i;
+            }
+        }
+
+        if (bestChance > 0.9)
+            return Move.discard(bestIndex);
+
+        if (state.getHints() > 3) {
+            int junk = lookForJunkHint();
+            if (junk != Move.NULL) {
+                log("Making a junk hint");
+                return junk;
             }
         }
 
@@ -297,11 +316,82 @@ public class HumanStylePlayer extends AbstractPlayer {
                 delta + 1, maxSearch, hinted, tableau, tableauWithoutHelp, intermediary, firstCardsSet);
     }
 
+    /**
+     * Return a hint that everyone will interpret as an unplayable hint. Return Move.NULL if this
+     * can't be found.
+     */
+    private int lookForJunkHint() {
+        // TODO could optimize with cards about to be played
+
+        int obsolete = allObsoleteCards();
+        for (int p = 0; p < state.getNumPlayers(); p++) {
+            if (p == me) {
+                continue;
+            }
+            for (int type = 0; type < 2; type++) {  // 0 = color, 1 = number
+                int max = type == 0 ? Card.NUM_COLORS : Card.NUM_NUMBERS;
+                int[] masks = type == 0 ? CardCounter.COLOR_MASKS : CardCounter.NUM_MASKS;
+                search:
+                for (int what = 0; what < max; what++) {
+                    int hand = state.getHand(p);
+                    int size = Hand.getSize(hand);
+                    int count = 0;
+                    for (int i = 0; i < size; i++) {
+                        int card = Hand.getCard(hand, i);
+                        int number = Card.getNumber(card);
+                        int content = type == 0 ? Card.getColor(card) : number;
+                        if (content == what) {
+                            count++;
+                            int possible = counter.getPossibleSet(p, i) & masks[what];
+                            if ((possible & obsolete) != possible) {
+                                // not all obsolete
+                                continue search;
+                            }
+                        }
+                    }
+                    if (count > 0)
+                        return type == 0 ? Move.hintColor(p, what) : Move.hintNumber(p, what);
+                }
+            }
+        }
+        return Move.NULL;
+    }
+
+    private boolean isJunkHint(int p, int which) {
+        int obsolete = allObsoleteCards();
+        int size = state.getHandSize(p);
+        for (int i = 0; i < size; i++) {
+            if (((1 << i) & which) != 0) {
+                int possible = counter.getPossibleSet(p, i);
+                if ((possible & obsolete) != possible) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private int allObsoleteCards() {
+        int set = 0;
+        for (int n = 0; n < Card.NUM_NUMBERS; n++) {
+            for (int c = 0; c < Card.NUM_COLORS; c++) {
+                if (Tableau.isObsolete(state.getTableau(), Card.create(c, n))) {
+                    set |= CardCounter.cardMask(c, n);
+                }
+            }
+        }
+        return set;
+    }
+
     @Override
     public void notifyHintColor(int targetPlayer, int sourcePlayer, int color, int which) {
         counter.notifyHintColor(targetPlayer, sourcePlayer, color, which);
         if (playQueues[sourcePlayer] != 0)
             throw new AssertionError();
+        if (isJunkHint(targetPlayer, which)) {
+            log("Interpreting as junk hint");
+            return;
+        }
         // assume a hint is a command to play everything
         playQueues[targetPlayer] = BitVectorUtil.lowestSetBits(which, maxCardsPerHint(0));
         if (which == 0) {
@@ -317,6 +407,10 @@ public class HumanStylePlayer extends AbstractPlayer {
         counter.notifyHintNumber(targetPlayer, sourcePlayer, number, which);
         if (playQueues[sourcePlayer] != 0)
             throw new AssertionError();
+        if (isJunkHint(targetPlayer, which)) {
+            log("Interpreting as junk hint");
+            return;
+        }
         // assume a hint is a command to play everything
         // TODO if card is obviously not playable, interpret as a don't discard hint
         playQueues[targetPlayer] = BitVectorUtil.lowestSetBits(which, maxCardsPerHint(1));

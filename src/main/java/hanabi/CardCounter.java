@@ -7,8 +7,8 @@ package hanabi;
 public class CardCounter {
     private static final boolean DEBUG = false;
     private static final boolean DUMP = false;
-    private static final int[] COLOR_MASKS;
-    private static final int[] NUM_MASKS;
+    public static final int[] COLOR_MASKS;
+    public static final int[] NUM_MASKS;
     public static final int NO_KNOWLEDGE = (1 << (Card.NUM_NUMBERS * Card.NUM_COLORS)) - 1;
     public static final int NO_KNOWLEDGE_NO_RAINBOW = (1 << (Card.NUM_NUMBERS * (Card.NUM_COLORS - 1))) - 1;
 
