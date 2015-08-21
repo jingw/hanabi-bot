@@ -28,6 +28,7 @@ public class HumanStylePlayer extends AbstractPlayer {
 
     private int[] playQueues;
     private CardCounter counter;
+    private boolean justHintedFinesse;
 
     @Override
     public void notifyGameStarted(GameStateView state, int position) {
@@ -48,6 +49,7 @@ public class HumanStylePlayer extends AbstractPlayer {
             if (ENABLE_FINESSE) {
                 int finesse = lookForFinesseHint();
                 if (finesse != Move.NULL) {
+                    justHintedFinesse = true;
                     return finesse;
                 }
             }
@@ -233,7 +235,7 @@ public class HumanStylePlayer extends AbstractPlayer {
     }
 
     private int lookForFinesseFinalizer(final int delta, final int maxSearch, final long hinted,
-                                        final int tableau, final int prevTableau,
+                                        final int tableau, final int tableauWithoutHelp,
                                         final int intermediary, final long firstCardsSet) {
         if (delta == maxSearch) {
             return Move.NULL;
@@ -253,6 +255,7 @@ public class HumanStylePlayer extends AbstractPlayer {
                 int count = 0;
                 int reliesOnFinesse = 0;
                 int futureTableau = tableau;
+                int futureTableauWithoutHelp = tableauWithoutHelp;
                 for (int i = 0; i < size; i++) {
                     int card = Hand.getCard(hand, i);
                     int number = Card.getNumber(card);
@@ -267,7 +270,9 @@ public class HumanStylePlayer extends AbstractPlayer {
                             // already hinted
                             continue loop;
                         }
-                        if (!Tableau.isPlayable(prevTableau, card)) {
+                        if (Tableau.isPlayable(futureTableauWithoutHelp, card)) {
+                            futureTableauWithoutHelp = Tableau.increment(futureTableau, Card.getColor(card));
+                        } else {
                             reliesOnFinesse++;
                         }
                         futureTableau = Tableau.increment(futureTableau, Card.getColor(card));
@@ -289,7 +294,7 @@ public class HumanStylePlayer extends AbstractPlayer {
         }
         // cannot end finesse with this player. try next one
         return lookForFinesseFinalizer(
-                delta + 1, maxSearch, hinted, tableau, prevTableau, intermediary, firstCardsSet);
+                delta + 1, maxSearch, hinted, tableau, tableauWithoutHelp, intermediary, firstCardsSet);
     }
 
     @Override
@@ -325,6 +330,9 @@ public class HumanStylePlayer extends AbstractPlayer {
 
     private void checkForFinesse(int target) {
         int finesse = interpretFinesse(target);
+        if (justHintedFinesse && finesse == -1)
+            throw new AssertionError();
+        justHintedFinesse = false;
         if (finesse != -1) {
             log("Detected finesse p%d -> p%d", finesse, target);
             if (playQueues[finesse] != 0)
