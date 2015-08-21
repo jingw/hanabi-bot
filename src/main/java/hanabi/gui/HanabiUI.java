@@ -52,9 +52,10 @@ public class HanabiUI extends JComponent {
         bottom.add(wrap(deck, "Deck"));
 
         score = new JLabel("25");
-        score.setFont(new Font(deck.getFont().getName(), Font.PLAIN, 80));
+        score.setFont(new Font(deck.getFont().getName(), Font.BOLD, 80));
         score.setPreferredSize(new Dimension(125, 110));
         score.setHorizontalAlignment(SwingConstants.CENTER);
+        score.setForeground(Color.BLUE);
         bottom.add(wrap(score, "Score"));
 
         discard = new CardMultiSetUI(false);
