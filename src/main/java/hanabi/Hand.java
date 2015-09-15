@@ -33,7 +33,7 @@ public class Hand {
     public static int getCard(int hand, int position) {
         int card = (hand >> (position * 6)) & 0b111111;
         if (card == 0b111111)
-            throw new IllegalArgumentException("No card in that position");
+            throw new IllegalArgumentException("No card in position " + position);
         return card;
     }
 

@@ -596,7 +596,7 @@ public class SmartPlayer extends AbstractPlayer {
         }
 
         playerViews[player].firstDiscardable = -1;
-        if (playerViews[player].firstPlayable != -1 && playerViews[player].firstPlayable > position) {
+        if (playerViews[player].firstPlayable != -1) {
             playerViews[player].firstPlayable -= 1;
         }
     }
