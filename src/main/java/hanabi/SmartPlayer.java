@@ -453,7 +453,7 @@ public class SmartPlayer extends AbstractPlayer {
     private int getFirstPlayable(int player) {
         int tableau = state.getTableau();
         int hand = state.getHand(player);
-        int size = Hand.getSize(hand);
+        int size = Math.min(Hand.getSize(hand), 4);
         int ans = -1;
         int ansPriority = 0;
         for (int i = 0; i < size; i++) {
@@ -523,7 +523,11 @@ public class SmartPlayer extends AbstractPlayer {
 
         playerViews[player].firstDiscardable = -1;
         if (playerViews[player].firstPlayable != -1) {
-            playerViews[player].firstPlayable -= 1;
+            if (playerViews[player].firstPlayable > position) {
+                playerViews[player].firstPlayable -= 1;
+            } else if (playerViews[player].firstPlayable == position) {
+                throw new AssertionError();
+            }
         }
     }
 
