@@ -4,11 +4,6 @@ package hanabi;
  * Plays Hanabi like humans do.
  */
 public class HumanStylePlayer extends AbstractPlayer {
-    private static final int MAX_TURNS_LEFT_FOR_GAMBLE_PLAY = 4;
-    /**
-     * Gambling requires disabling some useful asserts, so allow turning it off
-     */
-    private static final boolean ENABLE_GAMBLING = false;
     private static final boolean ENABLE_FINESSE = true;
 
     /**
@@ -58,12 +53,6 @@ public class HumanStylePlayer extends AbstractPlayer {
             if (hint != Move.NULL) {
                 return hint;
             }
-        }
-
-        // if the game is going to end anyways, and I have no useful hint to give, play a card and
-        // hope for the best.
-        if (state.getTurnsLeft() <= MAX_TURNS_LEFT_FOR_GAMBLE_PLAY && ENABLE_GAMBLING) {
-            return Move.play(0);
         }
 
         if (state.getDeckSize() < 2 && state.getHints() > 0) {
@@ -196,9 +185,7 @@ public class HumanStylePlayer extends AbstractPlayer {
                 if (Tableau.isPlayable(futureTableau, card)) {
                     futureTableau = Tableau.increment(futureTableau, Card.getColor(card));
                 } else {
-                    if (!ENABLE_GAMBLING) {
-                        throw new AssertionError();
-                    }
+                    throw new AssertionError();
                 }
             }
         }
@@ -516,17 +503,15 @@ public class HumanStylePlayer extends AbstractPlayer {
     @Override
     public void notifyPlay(int card, int position, int sourcePlayer) {
         counter.notifyPlay(card, position, sourcePlayer);
-        if (!ENABLE_GAMBLING) {
-            // this algorithm should never blow up
-            if (state.getLives() != GameState.MAX_LIVES) {
+        // this algorithm should never blow up
+        if (state.getLives() != GameState.MAX_LIVES) {
+            throw new AssertionError();
+        }
+        if ((playQueues[sourcePlayer] & (1 << position)) == 0) {
+            if (position != 0 || !ENABLE_FINESSE) {
                 throw new AssertionError();
             }
-            if ((playQueues[sourcePlayer] & (1 << position)) == 0) {
-                if (position != 0 || !ENABLE_FINESSE) {
-                    throw new AssertionError();
-                }
-                log("Assuming p%d was part of a finesse ending on me", sourcePlayer);
-            }
+            log("Assuming p%d was part of a finesse ending on me", sourcePlayer);
         }
         // remove from queue
         playQueues[sourcePlayer] = BitVectorUtil.deleteAndShift(playQueues[sourcePlayer], position);

@@ -17,27 +17,18 @@ public class SmartPlayer extends AbstractPlayer {
             unsalt[salt[i]] = i;
         }
     }
-    private boolean fancy = false;
+
     @Override
     public void notifyGameStarted(GameStateView stateView, int position) {
         super.notifyGameStarted(stateView, position);
         counter = new CardCounter(state);
         int numPlayers = state.getNumPlayers();
         otherPlayers = new int[numPlayers - 1];
-        if (false) {
-            int pos = numPlayers - 2;
-            for (int i = (this.me + 1) % numPlayers; i != this.me; i =
-                    (i + 1) % numPlayers) {
-                otherPlayers[pos] = i;
-                --pos;
-            }
-        } else {
-            int pos = 0;
-            for (int i = (this.me + 1) % numPlayers; i != this.me; i =
-                    (i + 1) % numPlayers) {
-                otherPlayers[pos] = i;
-                ++pos;
-            }
+        int pos = 0;
+        for (int i = (this.me + 1) % numPlayers; i != this.me; i =
+                (i + 1) % numPlayers) {
+            otherPlayers[pos] = i;
+            ++pos;
         }
 
         playerViews = new PlayerView[numPlayers];
@@ -96,11 +87,9 @@ public class SmartPlayer extends AbstractPlayer {
         int discardHint = makeDiscardHint();
         int safeDiscard = makeSafeDiscard();
 
-        int numfives = 0;
         int someFive = -1;
         for(int i = 0; i < state.getMyHandSize(); ++i) {
             if ((fives & (1 << i)) > 0) {
-                ++numfives;
                 someFive = i;
             }
         }
@@ -110,14 +99,6 @@ public class SmartPlayer extends AbstractPlayer {
             yolo = Move.play(someFive);
         }
 
-        int playableOnTable = 0;
-        for (int player: otherPlayers) {
-            if (playerViews[player].firstPlayable != -1) {
-                playableOnTable += 1;
-            }
-        }
-        
-//        System.out.println("Endgame.");
         if (play != -1 && cardsLeft != 1) {
             return play;
         }
@@ -173,12 +154,7 @@ public class SmartPlayer extends AbstractPlayer {
             return yolo;
         }
 
-        if (play == -1 && numfives == 1) {
-
-        }
-        
         int playHintPower = getPlayHintPower();
-        int discardHintPower = getDiscardHintPower();
         if (hints > 0) {
             log("playHint = " + playHint);
             log("playHintPower = " + playHintPower);
@@ -218,12 +194,10 @@ public class SmartPlayer extends AbstractPlayer {
         int discardHint = makeDiscardHint();
         int safeDiscard = makeSafeDiscard();
 
-        // System.out.println("discardHint: " + discardHint);
         // if can prevent life loss, do it.
         boolean willDie = isNextPlayObsolete();
 
         if (willDie && hints > 0 && playHint != -1 && state.getLives() <= 2) {
-//            System.out.println("Saving a life.");
             return playHint;
         }
 
@@ -246,7 +220,6 @@ public class SmartPlayer extends AbstractPlayer {
 
         // if there's a discardable card, discard it
         if (goodDiscard != -1 && state.getDeckSize() >= 2) {
-            //System.out.println("informed discard");
             return goodDiscard;
         }
 
@@ -254,8 +227,6 @@ public class SmartPlayer extends AbstractPlayer {
             int bestHint = discardHint;
             if (bestHint != -1) {
                 return bestHint;
-            } else {
-                //System.out.println("No hint.");
             }
         }
 
@@ -301,11 +272,8 @@ public class SmartPlayer extends AbstractPlayer {
 
     private boolean isNextPlayObsolete() {
         int nextPlayer = getNextPlayer();
-//        int nextNextPlayer = otherPlayers[1];
         int nextPlay = playerViews[nextPlayer].firstPlayable;
         if (nextPlay != -1) {
-            //System.out.println("nextPlayer: " + nextPlayer + ", nextPlay: "
-            //        + nextPlay);
             int card = Hand.getCard(state.getHand(nextPlayer), nextPlay);
             if (Tableau.isObsolete(state.getTableau(), card)) {
                 return true;
@@ -317,24 +285,6 @@ public class SmartPlayer extends AbstractPlayer {
 
     private int getNextPlayer() {
         return otherPlayers[0];
-    }
-
-    private int makeCheatingDiscard() {
-        int tableau = state.getTableau();
-        int hand = state.getHandUnsafe(me);
-//        for (int i = 0; i < Hand.getSize(hand); ++i) {
-//            int card = Hand.getCard(hand, i);
-//            if (Tableau.isObsolete(tableau, card)) {
-//                return Move.discard(i);
-//            }
-//        }
-        for (int i = 0; i < Hand.getSize(hand); ++i) {
-            int card = Hand.getCard(hand, i);
-            if (Card.getNumber(card) < 4) {
-                return Move.discard(i);
-            }
-        }
-        return Move.discard(0);
     }
 
     private double safeDiscardScore(int i) {
@@ -471,7 +421,6 @@ public class SmartPlayer extends AbstractPlayer {
         if (Tableau.isObsolete(tableau, card)) {
             return 5;
         }
-//        return 4;
 
         int inDeck = Card.NUM_COUNTS[Card.getNumber(card)];
         int left = inDeck - CardMultiSet.getCount(state.getDiscard(), card);
@@ -495,7 +444,6 @@ public class SmartPlayer extends AbstractPlayer {
     }
 
     private int rankPriority(int rank) {
-//         return 0;
         if (rank == 4) {
             return 4;
         }
@@ -511,13 +459,6 @@ public class SmartPlayer extends AbstractPlayer {
         for (int i = 0; i < size; i++) {
             int card = Hand.getCard(hand, i);
             int next = (player + 1) % state.getNumPlayers();
-            int prevCard = -1;
-            if (next != me && playerViews[next].firstPlayable != -1) {
-                prevCard = Hand.getCard(state.getHand(next), playerViews[next].firstPlayable);
-            }
-            if (card == prevCard && fancy) {
-                continue;
-            }
             if (Tableau.isPlayable(tableau, card)) {
                 int rank = Card.getNumber(card);
                 int priority = rankPriority(rank);
@@ -564,23 +505,8 @@ public class SmartPlayer extends AbstractPlayer {
             size += 1;
         }
         if (player != this.me && size > 1 && playerViews[player].firstPlayable != position) {
-            if (fancy) {
-                int difference = position - playerViews[player].firstPlayable;
-                firstPlayable -= difference;
-                if (firstPlayable < -1) {
-                    firstPlayable += 5;
-                }
-                if (firstPlayable >= 4) {
-                    firstPlayable -= 5;
-                }
-            }
-            
-            log("expected " + playerViews[player].firstPlayable);
-//            throw new RuntimeException();
-            System.out.println("WTF");
-//            throw new RuntimeException();
+            throw new AssertionError("expected " + playerViews[player].firstPlayable);
         }
-        // System.out.println("resetting playable");
         playerViews[player].firstPlayable = -1;
         if (playerViews[player].firstDiscardable != -1) {
             playerViews[player].firstDiscardable -= 1;
