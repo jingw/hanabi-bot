@@ -29,12 +29,12 @@ public class Main {
      * Play a lot of games and report statistics
      */
     private static void runTrials() {
-        final int TRIALS = 11_000;
+        final int TRIALS = 40_000;
         StatisticsCollector collector = new StatisticsCollector();
         collector.run(
                 SmartPlayer::new,
                 rnd -> new GameState(false, 4, rnd),
-                TRIALS * 5
+                TRIALS
         );
         collector.getDiscardHist().dump(1.96, System.out);
         collector.getDiscardFiveHist().dump(1.96, System.out);
