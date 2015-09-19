@@ -3,3 +3,6 @@ scala:
   - "2.11.7"
 jdk:
   - oraclejdk8
+before_script: pip install --user codecov
+script: sbt jacoco:cover
+after_success: codecov

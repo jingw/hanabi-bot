@@ -16,5 +16,9 @@ lazy val root = (project in file(".")).
     ),
     name := "hanabi-bot",
     description := "Bot that plays Hanabi",
-    version := "0.1"
+    version := "0.1",
+    jacoco.reportFormats in jacoco.Config := Seq(
+      de.johoop.jacoco4sbt.XMLReport(),
+      de.johoop.jacoco4sbt.ScalaHTMLReport(withBranchCoverage = true)
+    )
   )
