@@ -1,8 +1,8 @@
 language: scala
 scala:
-  - "2.11.7"
+  - "2.13.1"
 jdk:
-  - oraclejdk8
+  - oraclejdk11
 before_script: pip install --user codecov
-script: sbt jacoco:cover
+script: sbt jacoco
 after_success: codecov

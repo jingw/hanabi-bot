@@ -6,7 +6,7 @@ Hanabi Bot
 
 This project is a framework for programatically playing Hanabi.
 
- - Run tests and generate coverage report: `sbt jacoco:cover`
+ - Run tests and generate coverage report: `sbt jacoco`
  - Run main class: `sbt run`
 
 It currently contains two AIs:

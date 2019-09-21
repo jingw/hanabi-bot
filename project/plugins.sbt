@@ -1,1 +1,1 @@
-addSbtPlugin("de.johoop" % "jacoco4sbt" % "2.1.6")
+addSbtPlugin("com.github.sbt" % "sbt-jacoco" % "3.1.0")
